@@ -95,14 +95,14 @@ export default function Register() {
             id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded"
+            className="w-full border text-black border-gray-300 p-2 rounded"
             placeholder="Create a password"
             required
           />
 
           <label
             htmlFor="confirmPassword"
-            className="block mb-2 font-medium"
+            className="block mb-2  font-medium"
             style={{ fontWeight: "bold" }}
           >
             Confirm Password
@@ -112,7 +112,7 @@ export default function Register() {
             id="confirmPassword"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full border border-gray-300 p-2 rounded"
+            className="w-full border  text-black border-gray-300 p-2 rounded"
             placeholder="Confirm your password"
             required
           />
