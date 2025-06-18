@@ -1,6 +1,8 @@
 "use client";
+import axios from "axios";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -9,8 +11,14 @@ export default function Register() {
   const [error, setError] = useState("");
   const [isRegistered, setIsRegistered] = useState(false);
 
-  const handleRegister = (e) => {
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleRegister = async (e) => {
     e.preventDefault();
+
     if (!validateEmail(email)) {
       setError("Please enter a valid email.");
       return;
@@ -23,15 +31,22 @@ export default function Register() {
       setError("Passwords do not match.");
       return;
     }
-    setError("");
-    console.log("Registered with:", { email, password });
-    setIsRegistered(true);
-    setTimeout(() => setIsRegistered(false), 3000);
-  };
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    setError("");
+    try {
+      const response = await axios.post("http://localhost:8000/register", {
+        email,
+        password,
+      });
+      toast.success(response.data.message || "Registration successful!");
+      setIsRegistered(true);
+      setTimeout(() => setIsRegistered(false), 3000);
+    } catch (err) {
+      const msg =
+        err.response?.data?.error || "Registration failed. Please try again.";
+      setError(msg);
+      toast.error(msg);
+    }
   };
 
   return (
