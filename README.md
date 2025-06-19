@@ -96,12 +96,6 @@ A full-stack E-commerce application built using the MERN stack. This project is 
 
 ---
 
-## 📸 Screenshots
-
-> _(Add screenshots of Home, Product Details, Cart, Login page, etc.)_
-
----
-
 ## Installation
 
 ### Frontend
