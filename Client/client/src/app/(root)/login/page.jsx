@@ -1,187 +1,207 @@
 "use client";
+
+import React, { useState } from "react";
+import axios from "axios";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
+import { addLogginedDetail } from "../../../redux/slices/counter/user";
+const LoginPage = () => {
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [formErrors, setFormErrors] = useState({});
+  const [apiError, setApiError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-export default function Login() {
-  const [step, setStep] = useState(1); // Step 1: Email, Step 2: Password
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  const handleEmailSubmit = (e) => {
-    e.preventDefault();
-    if (validateEmail(email)) {
-      setStep(2); // Move to password step
-      setError("");
-    } else {
-      setError("Please enter a valid email.");
-    }
-  };
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (password.length >= 6) {
-      setError("");
-      console.log("Logging in with:", { email, password });
-      setIsLoggedIn(true); // Show pop-up on successful login
-      setTimeout(() => setIsLoggedIn(false), 3000); // Hide pop-up after 3 seconds
-    } else {
-      setError("Password must be at least 6 characters.");
-    }
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+    setFormErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: undefined,
+    }));
   };
 
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+  const validateForm = () => {
+    const errors = {};
+    if (!formData.email) errors.email = "Email is required.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      errors.email = "Invalid email format.";
+    if (!formData.password) errors.password = "Password is required.";
+    else if (formData.password.length < 6)
+      errors.password = "Password must be at least 6 characters.";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    dispatch(addLogginedDetail(formData))
+    e.preventDefault();
+    setIsLoading(true);
+    setApiError(null);
+
+    if (!validateForm()) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        process.env.NEXT_PUBLIC_API_URL+"/login/",
+        formData
+      );
+
+      if (response.status === 200) {
+        console.log("Login successful:", response.data);
+        // Optionally redirect or store token here
+        // setFormData({ email: "", password: "" });
+        router.push("/components/Products");
+      }
+    } catch (err) {
+      const backendError =
+        err.response?.data?.message || "Invalid email or password.";
+      setApiError(backendError);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div
-      style={{
-        display: "grid",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        backgroundColor: "#475569",
-        flexDirection: "column",
-        gap: "1rem",
-      }}
-    >
-      <div className="bg-slate-900 p-8 rounded shadow-md w-96 justify-center flex-col">
-        <h1
-          className="text-2xl font-bold mb-4 text-center text-white"
-          style={{
-            fontWeight: "bold",
-            fontSize: "1.5rem",
-            marginBottom: "1rem",
+    <div style={styles.container}>
+      <h1 style={styles.heading}>Login to ShopHub</h1>
 
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "column",
-          }}
-        >
-          Login
-        </h1>
+      {apiError && <p style={styles.errorMessage}>{apiError}</p>}
 
-        {step === 1 && (
-          <form onSubmit={handleEmailSubmit}>
-            <label
-              htmlFor="email"
-              className="block mb-2 font-medium gap-3"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                fontWeight: "bold",
-
-                gap: "0.5rem",
-              }}
-            >
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 p-2 rounded mb-4  ,"
-              placeholder="Enter your email"
-              required
-            />
-            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-            <button
-              type="submit"
-              className="flex w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-              style={{
-                position: "fixed",
-                top: "65%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                background: "#475569",
-                color: "white",
-                padding: "16px",
-                borderRadius: "8px",
-                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-                width: "100px",
-              }}
-            >
-              Next
-            </button>
-          </form>
-        )}
-
-        {step === 2 && (
-          <form onSubmit={handleLogin}>
-            <label
-              htmlFor="password"
-              className="block mb-2 font-medium gap-3"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                fontWeight: "bold",
-
-                gap: "0.5rem",
-              }}
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border  text-black border-gray-300 p-2 rounded mb-4"
-              placeholder="Enter your password"
-              required
-            />
-            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-            <button
-              type="submit"
-              className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-              style={{
-                position: "fixed",
-                top: "55%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                background: "#475569",
-                color: "white",
-                padding: "16px",
-                borderRadius: "8px",
-                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-                width: "100px",
-              }}
-            >
-              <Link href={"../../components"}>Login</Link>
-            </button>
-            <h2
-              style={{
-                marginTop: "100px",
-              }}
-            >
-              create an new account? <Link href={"./register"}>Login here</Link>
-            </h2>
-          </form>
-        )}
-      </div>
-      {/* Pop-Up Box */}
-      {isLoggedIn && (
-        <div
-          style={{
-            position: "fixed",
-            top: "20%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            background: "#22c55e",
-            color: "white",
-            padding: "16px",
-            borderRadius: "8px",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-            zIndex: 1000,
-          }}
-        >
-          You are logged in!
+      <form onSubmit={handleSubmit} style={styles.form}>
+        {/* Email Field */}
+        <div style={styles.formGroup}>
+          <label htmlFor="email" style={styles.label}>
+            Email:
+          </label>
+          <input
+            type="email"
+            name="email"
+            id="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={handleInputChange}
+            style={styles.input}
+          />
+          {formErrors.email && (
+            <p style={styles.fieldError}>{formErrors.email}</p>
+          )}
         </div>
-      )}
+
+        {/* Password Field */}
+        <div style={styles.formGroup}>
+          <label htmlFor="password" style={styles.label}>
+            Password:
+          </label>
+          <input
+            type="password"
+            name="password"
+            id="password"
+            placeholder="Enter your password"
+            value={formData.password}
+            onChange={handleInputChange}
+            style={styles.input}
+          />
+          {formErrors.password && (
+            <p style={styles.fieldError}>{formErrors.password}</p>
+          )}
+        </div>
+
+        <button type="submit" style={styles.button} disabled={isLoading}>
+          {isLoading ? "Logging in..." : "Login"}
+        </button>
+      </form>
+
+      <p style={styles.loginLink}>
+        Don't have an account?{" "}
+        <Link href="/register" style={styles.link}>
+          Register here
+        </Link>
+      </p>
     </div>
   );
-}
+};
+
+export default LoginPage;
+
+const styles = {
+  container: {
+    fontFamily: "Arial, sans-serif",
+    maxWidth: "500px",
+    margin: "50px auto",
+    padding: "30px",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    backgroundColor: "#fff",
+  },
+  heading: {
+    textAlign: "center",
+    color: "#333",
+    marginBottom: "30px",
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "15px",
+  },
+  formGroup: {
+    marginBottom: "10px",
+  },
+  label: {
+    display: "block",
+    marginBottom: "5px",
+    fontWeight: "bold",
+    color: "#555",
+  },
+  input: {
+    width: "100%",
+    padding: "10px",
+    border: "1px solid #ccc",
+    borderRadius: "4px",
+    boxSizing: "border-box",
+  },
+  button: {
+    backgroundColor: "#0070f3",
+    color: "white",
+    padding: "12px 20px",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    fontSize: "16px",
+    marginTop: "10px",
+  },
+  errorMessage: {
+    color: "#e74c3c",
+    backgroundColor: "#fde3e3",
+    padding: "10px",
+    borderRadius: "4px",
+    textAlign: "center",
+  },
+  fieldError: {
+    color: "#e74c3c",
+    fontSize: "0.85em",
+    marginTop: "5px",
+  },
+  loginLink: {
+    textAlign: "center",
+    marginTop: "20px",
+    color: "#555",
+  },
+  link: {
+    color: "#0070f3",
+    textDecoration: "none",
+  },
+};

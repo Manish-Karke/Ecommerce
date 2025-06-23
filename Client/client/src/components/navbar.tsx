@@ -25,10 +25,10 @@ export default function Navbar() {
 
   const navigation = [
     { name: "Home", href: "/" },
-    { name: "Products", href: "/products" },
-    { name: "Categories", href: "/categories" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
+    { name: "Products", href: "/components/Products" },
+    { name: "Categories", href: "/components/categories" },
+    { name: "About", href: "/components/about" },
+    { name: "Contact", href: "/components/contact" },
   ];
 
   const isActive = (href: string) => {
@@ -89,7 +89,7 @@ export default function Navbar() {
             </Button>
 
             {/* Cart */}
-            <Link href="/cart">
+            <Link href="/components/cart">
               <Button variant="ghost" size="sm" className="relative">
                 <ShoppingCart className="h-5 w-5" />
                 {state.itemCount > 0 && (

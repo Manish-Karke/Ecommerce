@@ -148,7 +148,7 @@ export default function Footer() {
         <div className="border-t border-gray-800 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-sm text-gray-300">
-              © 2024 ShopHub. All rights reserved.
+              © 2025 ShopHub. All rights reserved.
             </div>
             <div className="flex space-x-6 text-sm">
               <Link

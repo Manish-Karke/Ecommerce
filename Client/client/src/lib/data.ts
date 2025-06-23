@@ -3,7 +3,7 @@ export interface Product {
   name: string;
   price: number;
   originalPrice?: number;
-  image: string;
+  // image: string;
   category: string;
   description: string;
   rating: number;
@@ -32,7 +32,7 @@ export const products: Product[] = [
     name: "Wireless Bluetooth Headphones",
     price: 79.99,
     originalPrice: 99.99,
-    image: "/placeholder.svg?height=300&width=300",
+    // image: "/placeholder.svg?height=300&width=300",
     category: "Electronics",
     description:
       "High-quality wireless headphones with noise cancellation and 30-hour battery life.",
@@ -45,7 +45,7 @@ export const products: Product[] = [
     id: "2",
     name: "Premium Cotton T-Shirt",
     price: 24.99,
-    image: "/placeholder.svg?height=300&width=300",
+    // image: "/placeholder.svg?height=300&width=300",
     category: "Clothing",
     description:
       "Comfortable 100% cotton t-shirt available in multiple colors and sizes.",
@@ -59,7 +59,7 @@ export const products: Product[] = [
     name: "Smart Fitness Watch",
     price: 199.99,
     originalPrice: 249.99,
-    image: "/placeholder.svg?height=300&width=300",
+    // image: "/placeholder.svg?height=300&width=300",
     category: "Electronics",
     description:
       "Track your fitness goals with this advanced smartwatch featuring heart rate monitoring.",
@@ -72,7 +72,7 @@ export const products: Product[] = [
     id: "4",
     name: "Ceramic Plant Pot Set",
     price: 34.99,
-    image: "/placeholder.svg?height=300&width=300",
+    // image: "/placeholder.svg?height=300&width=300",
     category: "Home & Garden",
     description:
       "Beautiful set of 3 ceramic plant pots perfect for indoor gardening.",
@@ -84,7 +84,7 @@ export const products: Product[] = [
     id: "5",
     name: "Yoga Mat Premium",
     price: 49.99,
-    image: "/placeholder.svg?height=300&width=300",
+    // image: "/placeholder.svg?height=300&width=300",
     category: "Sports",
     description:
       "Non-slip yoga mat made from eco-friendly materials, perfect for all yoga practices.",
@@ -96,7 +96,7 @@ export const products: Product[] = [
     id: "6",
     name: "JavaScript Programming Book",
     price: 39.99,
-    image: "/placeholder.svg?height=300&width=300",
+    // image: "/placeholder.svg?height=300&width=300",
     category: "Books",
     description:
       "Complete guide to modern JavaScript programming with practical examples.",
@@ -108,7 +108,7 @@ export const products: Product[] = [
     id: "7",
     name: "Organic Face Cream",
     price: 29.99,
-    image: "/placeholder.svg?height=300&width=300",
+    // image: "/placeholder.svg?height=300&width=300",
     category: "Beauty",
     description:
       "Natural organic face cream with anti-aging properties and SPF protection.",
@@ -120,7 +120,7 @@ export const products: Product[] = [
     id: "8",
     name: "Wireless Gaming Mouse",
     price: 59.99,
-    image: "/placeholder.svg?height=300&width=300",
+    // image: "/placeholder.svg?height=300&width=300",
     category: "Electronics",
     description:
       "High-precision gaming mouse with customizable RGB lighting and programmable buttons.",
