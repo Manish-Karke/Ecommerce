@@ -19,7 +19,7 @@ const LoginPage = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -43,7 +43,7 @@ const LoginPage = () => {
   };
 
   const handleSubmit = async (e) => {
-    dispatch(addLogginedDetail(formData))
+    // dispatch(addLogginedDetail(formData))
     e.preventDefault();
     setIsLoading(true);
     setApiError(null);
@@ -55,15 +55,27 @@ const LoginPage = () => {
 
     try {
       const response = await axios.post(
-        process.env.NEXT_PUBLIC_API_URL+"/login/",
+        process.env.NEXT_PUBLIC_API_URL + "/login/",
         formData
       );
 
       if (response.status === 200) {
         console.log("Login successful:", response.data);
-        // Optionally redirect or store token here
-        // setFormData({ email: "", password: "" });
-        router.push("/components/Products");
+        // this is kept for the authentication
+        const { token, user } = response.data;
+        localStorage.setItem("token", token);
+
+        dispatch(
+          addLogginedDetail({
+            ...user,
+            token: token,
+          })
+        );
+        if (user.role === "customer") {
+          router.push("/components/Products");
+        } else {
+          router.push("/Admin");
+        }
       }
     } catch (err) {
       const backendError =

@@ -12,5 +12,30 @@ brandRouter.post(
   userValidator(BrandDataDTO),
   brandCtrl.createBrand
 );
+brandRouter
+  .route("/:id")
+  .put(
+    // auth(Roles.ADMIN),
+    uploader().single("logo"),
+    userValidator(BrandDataDTO),
+    brandCtrl.updateBrand
+  )
+  .delete(
+    // auth(Roles.ADMIN),
+    brandCtrl.deleteBrand
+  )
+  .get(
+    // auth(),
+   brandCtrl.searchAllBrands);
 
+brandRouter.route("/slug/:slug").get(
+  // auth(),
+  brandCtrl.SearchBrandBySlug
+);
+
+brandRouter.get(
+  "/",
+  // auth(),
+  brandCtrl.listAllBrands
+);
 module.exports = brandRouter;

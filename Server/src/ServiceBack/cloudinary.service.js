@@ -15,7 +15,7 @@ class CloudinaryServices {
   fileUpload = async (path, dir = "") => {
     try {
       const { public_id, secure_url } = await cloudinary.uploader.upload(path, {
-        folder: "/ecommerce/" + dir,
+        folder: "ecommerce/" + dir,
         unique_filename: true,
       });
 

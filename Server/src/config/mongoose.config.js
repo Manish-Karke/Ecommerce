@@ -8,9 +8,9 @@ const { mongoDbConfig } = require("./config.config");
       autoCreate: true,
       autoIndex: true,
     });
-    console.log("Db connected succesfully!");
+    console.log("Db connected successfully!");
   } catch (error) {
-    console.log("Db not connected!");
+    console.error("Db not connected! Error:", error.message);
     process.exit(1);
   }
 })();

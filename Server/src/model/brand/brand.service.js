@@ -56,7 +56,7 @@ class BrandServices {
         .limit(limit)
         .sort({ [field]: dir });
 
-      const total = await BrandModel.countDocuments(dataFilter);
+      const total = await BrandModel.countDocuments(data);
       return {
         data: itemFilter,
         pagination: {
@@ -115,6 +115,7 @@ class BrandServices {
   transformBrandCreateData = async (req, res) => {
     try {
       let payload = req.body;
+     
       if (req.file) {
         payload.logo = await cloudinarySvs.fileUpload(req.file.path, "brand/");
       }
@@ -123,7 +124,8 @@ class BrandServices {
         lower: true,
       });
 
-      payload.createdBy = req.loggedInUser._id;
+      // Extract the _id from the logged-in user
+      payload.createdBy = req.loggedInUser && req.loggedInUser._id ? req.loggedInUser._id : null;
 
       return payload;
     } catch (error) {

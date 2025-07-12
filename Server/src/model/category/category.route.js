@@ -1,43 +1,17 @@
-const mongoose = require("mongoose");
-const categoriesSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    min: 2,
-    max: 50,
-    unique: true,
-  },
+const userValidator = require("../../middleware/middleware.validate");
+const uploader = require("../../middleware/uploader.middleware");
+const categoryCtrl = require("./category.controller");
+const CategoryDataDTO = require("./category.validation");
 
-  slug: {
-    type: String,
-    require: true,
-    unique: true,
-  },
+const categoryRouter = require("express").Router();
 
-  image:{
-    public_id: String,
-    url: String,
-    optimizedUrl: String,
+categoryRouter
+  .route("/")
+  .post(
+    //auth()
+    uploader().single("image"),
+    userValidator(CategoryDataDTO),
+    categoryCtrl.createCategory
+  );
 
-  },
-  data:{
-    type:String,
-  },
-
-  status:{
-    type:String,
-    required: true,
-    enum: Object.values(Status),
-    default:Status.INACTIVE
-  },
-   createdBy: {
-      type: mongoose.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-      updatedBy: {
-      type: mongoose.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-  })
+module.exports = categoryRouter;
