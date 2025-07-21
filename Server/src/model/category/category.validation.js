@@ -6,7 +6,6 @@ const CategoryDataDTO = Joi.object({
   data:Joi.string().allow("",null).optional().default(null),
   status:Joi.string().regex(/^(active|inactive)$/).default("inactive"),
   isFeatured:Joi.boolean().required(),
-  isMenu:Joi.boolean().allow("",null).optional().default(false),
   parentId:Joi.string().allow("",null).optional().
   default(null),
   brandId:Joi.array().items(Joi.string()).allow("",null).optional().

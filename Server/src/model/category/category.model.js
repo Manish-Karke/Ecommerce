@@ -38,23 +38,18 @@ const ProductSchema = new mongoose.Schema(
       required: true,
     },
 
-    isMenu: {
-      type: Boolean,
-      default: false,
-    },
-
     status: {
       type: String,
       enum: Object.values(Status),
       default: Status.INACTIVE,
     },
 
-    price: {
-      type: Number,
-      default: 0,
-      min: 100,
-      required: true,
-    },
+    // price: {
+    //   type: Number,
+    //   default: 0,
+    //   min: 100,
+    //   required: true,
+    // },
 
     discount: {
       type: Number,
@@ -119,5 +114,5 @@ const ProductSchema = new mongoose.Schema(
   }
 );
 
-const ProductModel = mongoose.model("Product", ProductSchema);
-module.exports = ProductModel;
+const categoryModel = mongoose.model("Product", ProductSchema);
+module.exports = categoryModel;

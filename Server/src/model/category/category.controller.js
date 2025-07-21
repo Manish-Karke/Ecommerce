@@ -1,5 +1,5 @@
 const categorySvs = require("./category.service");
-const { message } = require("./category.validation");
+
 
 class categoryContoller {
 createCategory = async(req ,res , next)=>{

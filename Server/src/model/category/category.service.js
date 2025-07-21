@@ -1,7 +1,8 @@
 const cloudinarySvs = require("../../ServiceBack/cloudinary.service");
-
+const slugify = require("slugify");
+const categoryModel = require("./category.model");
 class categoryServices {
-  tranforCreateBrandData = async (data) => {
+  tranforCreateBrandData = async (req) => {
     let payload = req.body;
     if (req.file) {
       payload.image = await cloudinarySvs.fileUpload(
@@ -30,7 +31,7 @@ class categoryServices {
       payload.brandId = null;
     }
 
-    payload.createdBy = req.loggedInUser._id;
+    payload.createdBy = req.loggedInUser?._id;
     return payload;
   };
 

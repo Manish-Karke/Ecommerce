@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 interface Brand {
   _id?: string;
   name: string;
-  // slug: string;
   data?: string;
   status: "active" | "inactive";
   isfeatured: boolean;
@@ -56,7 +55,7 @@ const BrandForm: React.FC<BrandFormProps> = ({
     }));
   };
 
-  // Handle file input for logo
+  
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setLogo(e.target.files[0]);
