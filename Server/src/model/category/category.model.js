@@ -1,10 +1,7 @@
-// name, images, [brandId], [CategoryId], isFeatured, isMenu, status, createdBy, updatedBy, description, price, discount, afterDiscout, order, cart,
-
 const mongoose = require("mongoose");
 const { Status } = require("../../config/constant");
-const { required } = require("joi");
 
-const ProductSchema = new mongoose.Schema(
+const CategorySchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -44,12 +41,12 @@ const ProductSchema = new mongoose.Schema(
       default: Status.INACTIVE,
     },
 
-    // price: {
-    //   type: Number,
-    //   default: 0,
-    //   min: 100,
-    //   required: true,
-    // },
+    price: {
+      type: Number,
+      default: 0,
+      min: 100,
+      required: true,
+    },
 
     discount: {
       type: Number,
@@ -114,5 +111,5 @@ const ProductSchema = new mongoose.Schema(
   }
 );
 
-const categoryModel = mongoose.model("Product", ProductSchema);
+const categoryModel = mongoose.model("Category", CategorySchema);
 module.exports = categoryModel;

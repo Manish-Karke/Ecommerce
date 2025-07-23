@@ -4,7 +4,7 @@ class ProductContoller {
  createProduct = async (req, res, next) => {
     try {
       const userDetails = await productSvs.transformCreateProduct(req);
-      const data = await productSvc.createProduct(userDetails);
+      const data = await productSvs.createProduct(userDetails);
 
       res.json({
         data: data,

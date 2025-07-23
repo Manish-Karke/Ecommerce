@@ -96,21 +96,21 @@ const ProductSchema = new mongoose.Schema(
       default: null,
     },
 
-    // brandId: [
-    //   {
-    //     type: mongoose.Types.ObjectId,
-    //     ref: "Brand",
-    //     default: null,
-    //   },
-    // ],
+    brandId: 
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Brand",
+        default: null,
+      },
+    
 
-    // categoryId: [
-    //   {
-    //     type: mongoose.Types.ObjectId,
-    //     ref: "Category",
-    //     default: null,
-    //   },
-    // ],
+    categoryId: 
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Category",
+        default: null,
+      },
+    
   },
   {
     timestamps: true,

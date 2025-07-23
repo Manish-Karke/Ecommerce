@@ -9,21 +9,14 @@ const ProductValidationDTO = Joi.object({
   isMenu: Joi.boolean().allow("", null).optional().default(false),
   status: Joi.string()
     .regex(/^(inactive|active)$/)
-    .default(Status.INACTIVE).required(),
+    .default(Status.INACTIVE)
+    .required(),
   price: Joi.number().min(100).required(),
   discount: Joi.number().max(90).allow("", null).optional().default(0),
   order: Joi.number().allow("", null).optional().default(0),
   stock: Joi.number().allow("", null).optional().default(0),
-  categoryId: Joi.array()
-    .items(Joi.string())
-    .allow("", null)
-    .optional()
-    .default(null),
-  brandId: Joi.array()
-    .items(Joi.string())
-    .allow("", null)
-    .optional()
-    .default(null),
+  categoryId: Joi.string().allow("", null).optional().default(null),
+  brandId: Joi.string().allow("", null).optional().default(null),
   seller: Joi.string().allow(null, "").optional().default(null),
 });
-module.exports = ProductValidationDTO
+module.exports = ProductValidationDTO;

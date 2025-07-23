@@ -1,4 +1,6 @@
 "use client";
+import axios from "axios";
+
 import React, { ChangeEvent, useState } from "react";
 
 interface Category {
@@ -8,6 +10,7 @@ interface Category {
   status: "active" | "inactive";
   image?: { url: string };
   isFeatured: boolean;
+  price?: number;
 }
 
 interface CategoryFormProps {
@@ -22,6 +25,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSubmit }) => {
     data: category?.data || "",
     status: category?.status || "inactive",
     isFeatured: category?.isFeatured || false,
+    price: category?.price || "",
   });
   const [image, setImage] = useState<File | null>(null);
   const [showForm, setShowForm] = useState(false); // Control form visibility
@@ -69,6 +73,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSubmit }) => {
     formDataToSend.append("name", formData.name);
     formDataToSend.append("data", formData.data);
     formDataToSend.append("status", formData.status);
+    formDataToSend.append("price", String(formData.price));
     formDataToSend.append("isFeatured", String(formData.isFeatured));
     if (image) {
       formDataToSend.append("image", image);
@@ -76,14 +81,25 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSubmit }) => {
 
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/category`;
+      const method = "POST";
+      const response = await axios({
+        method,
+        url,
+        data: formDataToSend,
+        headers: {
+          "Content-Type": "multipart/form-data",
+          // Authorization: `Bearer ${token}`,
+        },
+      });
+
       setLoading(false);
-      onSubmit("Category submitted successfully!");
+      onSubmit(response.data.message || "Category submitted successfully!");
       // Reset form after successful submission
       setFormData({
         name: "",
         data: "",
+        price: " ",
         status: "inactive",
         isFeatured: false,
       });
@@ -91,7 +107,6 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSubmit }) => {
       setShowForm(false); // Hide form after submission
     } catch (error) {
       setLoading(false);
-      onSubmit("Failed to submit category. Please try again.");
     }
   };
 
@@ -177,6 +192,23 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category, onSubmit }) => {
               name="data"
               id="data"
               value={formData.data}
+              onChange={handleChange}
+              className="mt-1 block w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
+              rows={4}
+            />
+          </div>
+
+          <div className="mb-4">
+            <label
+              htmlFor="price"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Price
+            </label>
+            <input
+              name="price"
+              id="price"
+              value={formData.price}
               onChange={handleChange}
               className="mt-1 block w-full p-2 border rounded-md focus:ring-blue-500 focus:border-blue-500"
               rows={4}

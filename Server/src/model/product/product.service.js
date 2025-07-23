@@ -1,3 +1,7 @@
+const slugify = require("slugify");
+const { generateRandomString } = require("../../utilities/helper");
+const ProductModel = require("./product.model");
+const cloudinarySvs = require("../../ServiceBack/cloudinary.service");
 class ProductServices {
   transformCreateProduct = async (req) => {
     try {
@@ -34,10 +38,10 @@ class ProductServices {
       }
 
       if (!payload.seller || payload.seller === null || payload.seller === "") {
-        payload.seller = req.loggedInUser._id;
+        payload.seller = req.loggedInUser._id||null;
       }
 
-      payload.createdBy = req.loggedInUser._id;
+      // payload.createdBy = req.loggedInUser._id||null;
 
       //images
       if (req.files) {
