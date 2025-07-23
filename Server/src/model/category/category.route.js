@@ -12,6 +12,7 @@ categoryRouter
     uploader().single("image"),
     userValidator(CategoryDataDTO),
     categoryCtrl.createCategory
-  );
+  )
+  .get(categoryCtrl.showCategory);
 
 module.exports = categoryRouter;
