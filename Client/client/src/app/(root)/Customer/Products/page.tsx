@@ -9,11 +9,11 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
+} from "../../../../components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Filter, Grid, List } from "lucide-react";
-import ProductCard from "../../../components/product-cart";
+import ProductCard from "../../../../components/product-cart";
 import { products, categories } from "@/lib/data";
 
 export default function ProductsPage() {

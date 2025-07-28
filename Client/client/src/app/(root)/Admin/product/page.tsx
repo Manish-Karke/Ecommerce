@@ -89,6 +89,7 @@ const ProductForm: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -142,18 +143,17 @@ const ProductForm: React.FC = () => {
   const handleChange = (
     e:
       | ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      | SelectChangeEvent<string | "active" | "inactive" | "draft" | "archived">
+      | SelectChangeEvent<string | "active" | "inactive">
   ) => {
     const { name, value, type, checked, files } = e.target as HTMLInputElement;
     let newValue: string | number | boolean | File | null = value;
 
     if (name === "categoryId" || name === "brandId" || name === "status") {
-      newValue = value as string; // Or specific enum type
-    } else if (["price", "stock", "order"].includes(name)) {
-      newValue = value === "" ? 0 : Math.max(0, parseFloat(value));
-    } else if (name === "discount") {
-      newValue =
-        value === "" ? 0 : Math.min(90, Math.max(0, parseFloat(value)));
+      newValue = value as string;
+    } else if (["price", "stock", "order", "discount"].includes(name)) {
+      newValue = value === "" ? "" : parseFloat(value);
+    } else {
+      newValue = value;
     }
 
     if (type === "checkbox") {
@@ -233,7 +233,7 @@ const ProductForm: React.FC = () => {
       );
       console.log("Product created successfully:", response.data);
       alert("Product created!");
-
+      setShowForm;
       setFormData({
         name: "",
         description: "",
@@ -295,361 +295,367 @@ const ProductForm: React.FC = () => {
   }
 
   return (
-    <FormCard>
-      <CardContent>
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          align="center"
-          sx={{
-            fontWeight: 700,
-            color: theme.palette.primary.dark,
-            mb: 4,
-          }}
-        >
-          Create New Product
-        </Typography>
+    <main>
+      <h1 className="text-2xl font-bold mb-5">Products</h1>
+      <button
+        onClick={() => setShowForm(!showForm)}
+        className="p-4 bg-amber-600 text-white rounded-2xl hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500"
+      >
+        {showForm ? "Close Form" : "Add Product"}
+      </button>
+      {showForm && (
+        <FormCard>
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            align="center"
+            sx={{
+              fontWeight: 800,
+              color: theme.palette.primary.dark,
+              mb: 2,
+            }}
+          >
+            Create New Product
+          </Typography>
 
-        {formError && (
-          <Alert severity="error" sx={{ mb: 3 }} variant="outlined">
-            {formError}
-          </Alert>
-        )}
+          {formError && (
+            <Alert severity="error" sx={{ mb: 3 }} variant="outlined">
+              {formError}
+            </Alert>
+          )}
 
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
-            {/* Product Name */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Product Name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                variant="filled"
-                placeholder="Enter product name"
-              />
-            </Grid>
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={3}>
+              {/* Product Name */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Product Name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  variant="filled"
+                  placeholder="Enter product name"
+                />
+              </Grid>
 
-            {/* Description */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                multiline
-                rows={4}
-                variant="filled"
-                placeholder="Enter product description"
-              />
-            </Grid>
+              {/* Description */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  multiline
+                  rows={4}
+                  variant="filled"
+                  placeholder="Enter product description"
+                />
+              </Grid>
 
-            {/* Category */}
-            <Grid item xs={12} width={100}>
-              <FormControl fullWidth variant="filled" required>
-                <InputLabel id="category-label">Category</InputLabel>
-                <Select
-                  labelId="category-label"
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={
-                    handleChange as (
-                      event: SelectChangeEvent<string>,
-                      child: React.ReactNode
-                    ) => void
-                  } // Explicitly cast for Select
-                  label="Category"
-                >
-                  <MenuItem value="">
-                    <em>Select Category</em>
-                  </MenuItem>
-                  {categories.map((cat) => (
-                    <MenuItem key={cat._id} value={cat._id}>
-                      {cat.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            {/* Brand */}
-            <Grid item xs={12} width={100}>
-              <FormControl fullWidth variant="filled" required>
-                <InputLabel id="brand-label">Brand</InputLabel>
-                <Select
-                  labelId="brand-label"
-                  name="brandId"
-                  value={formData.brandId}
-                  onChange={
-                    handleChange as (
-                      event: SelectChangeEvent<string>,
-                      child: React.ReactNode
-                    ) => void
-                  } // Explicitly cast for Select
-                  label="Brand"
-                >
-                  <MenuItem value="">
-                    <em>Select Brand</em>
-                  </MenuItem>
-                  {brands.map((brand) => (
-                    <MenuItem key={brand._id} value={brand._id}>
-                      {brand.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-
-            {/* Price */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Price"
-                name="price"
-                type="number"
-                value={formData.price}
-                onChange={handleChange}
-                required
-                variant="filled"
-                placeholder="Enter price"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <AttachMoneyIcon color="action" />
-                    </InputAdornment>
-                  ),
-                  inputProps: { min: 0, step: 0.01 },
-                }}
-              />
-            </Grid>
-
-            {/* Discount */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Discount"
-                name="discount"
-                type="number"
-                value={formData.discount}
-                onChange={handleChange}
-                variant="filled"
-                placeholder="Enter discount (0-90%)"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <Typography color="text.secondary">%</Typography>
-                    </InputAdornment>
-                  ),
-                  inputProps: { min: 0, max: 90, step: 0.01 },
-                }}
-              />
-            </Grid>
-
-            {/* Order */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Order"
-                name="order"
-                type="number"
-                value={formData.order}
-                onChange={handleChange}
-                variant="filled"
-                placeholder="Enter order"
-                InputProps={{
-                  inputProps: { min: 0 },
-                }}
-              />
-            </Grid>
-
-            {/* Stock */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Stock"
-                name="stock"
-                type="number"
-                value={formData.stock}
-                onChange={handleChange}
-                required
-                variant="filled"
-                placeholder="Enter stock quantity"
-                InputProps={{
-                  inputProps: { min: 0 },
-                }}
-              />
-            </Grid>
-
-            {/* Status */}
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth variant="filled">
-                <InputLabel id="status-label">Status</InputLabel>
-                <Select
-                  labelId="status-label"
-                  name="status"
-                  value={formData.status}
-                  onChange={
-                    handleChange as (
-                      event: SelectChangeEvent<string>,
-                      child: React.ReactNode
-                    ) => void
-                  } // Explicitly cast for Select
-                  label="Status"
-                >
-                  <MenuItem value="active">Active</MenuItem>
-                  <MenuItem value="inactive">Inactive</MenuItem>
-                  <MenuItem value="draft">Draft</MenuItem>
-                  <MenuItem value="archived">Archived</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            {/* Checkboxes */}
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              sx={{ display: "flex", alignItems: "center", gap: 2 }}
-            >
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    name="isFeatured"
-                    checked={formData.isFeatured}
-                    onChange={handleChange}
-                    color="primary"
-                    sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
-                  />
-                }
-                label={
-                  <Typography variant="body1" color="text.primary">
-                    Featured Product
-                  </Typography>
-                }
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    name="isMenu"
-                    checked={formData.isMenu}
-                    onChange={handleChange}
-                    color="primary"
-                    sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
-                  />
-                }
-                label={
-                  <Typography variant="body1" color="text.primary">
-                    Show in Menu
-                  </Typography>
-                }
-              />
-            </Grid>
-
-            {/* Image Upload */}
-            <Grid item xs={12}>
-              <Box
-                sx={{
-                  border: `2px dashed ${theme.palette.divider}`,
-                  borderRadius: theme.shape.borderRadius,
-                  p: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
-                  minHeight: imagePreviewUrl ? "auto" : 120,
-                  transition: "all 0.3s ease-in-out",
-                  "&:hover": {
-                    borderColor: theme.palette.primary.light,
-                    backgroundColor: theme.palette.action.hover,
-                  },
-                }}
-              >
-                <Button
-                  variant="contained"
-                  component="label"
-                  startIcon={<UploadFileIcon />}
-                  sx={{ textTransform: "none", mb: 1 }}
-                >
-                  {formData.images ? "Change Image" : "Upload Product Image"}
-                  <input
-                    type="file"
-                    name="images"
-                    onChange={handleChange}
-                    hidden
-                    accept="image/*"
-                  />
-                </Button>
-                {imagePreviewUrl ? (
-                  <Box
-                    sx={{
-                      mt: 2,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                    }}
+              {/* Category */}
+              <Grid item xs={12} width={100}>
+                <FormControl fullWidth variant="filled" required>
+                  <InputLabel id="category-label">Category</InputLabel>
+                  <Select
+                    labelId="category-label"
+                    name="categoryId"
+                    value={formData.categoryId}
+                    onChange={
+                      handleChange as (
+                        event: SelectChangeEvent<string>,
+                        child: React.ReactNode
+                      ) => void
+                    }
+                    label="Category"
                   >
-                    <Avatar
-                      src={imagePreviewUrl}
-                      alt="Product Preview"
-                      sx={{
-                        width: 100,
-                        height: 100,
-                        mb: 1,
-                        border: `1px solid ${theme.palette.divider}`,
-                      }}
-                      variant="rounded"
-                    />
-                    <FormHelperText
-                      sx={{ display: "flex", alignItems: "center" }}
-                    >
-                      Selected: {formData.images?.name || "No file selected"}
-                      <IconButton
-                        size="small"
-                        onClick={handleRemoveImage}
-                        color="error"
-                        sx={{ ml: 1 }}
-                      >
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
-                    </FormHelperText>
-                  </Box>
-                ) : (
-                  <FormHelperText>
-                    No image selected. Max file size: 5MB.
-                  </FormHelperText>
-                )}
-              </Box>
-            </Grid>
+                    <MenuItem value="">
+                      <em>Select Category</em>
+                    </MenuItem>
+                    {categories.map((cat) => (
+                      <MenuItem key={cat._id} value={cat._id}>
+                        {cat.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
 
-            {/* Submit Button */}
-            <Grid item xs={12}>
-              <SubmitButton
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={isSubmitting}
-                fullWidth
+              {/* Brand */}
+              <Grid item xs={12} width={100}>
+                <FormControl fullWidth variant="filled" required>
+                  <InputLabel id="brand-label">Brand</InputLabel>
+                  <Select
+                    labelId="brand-label"
+                    name="brandId"
+                    value={formData.brandId}
+                    onChange={
+                      handleChange as (
+                        event: SelectChangeEvent<string>,
+                        child: React.ReactNode
+                      ) => void
+                    } // Explicitly cast for Select
+                    label="Brand"
+                  >
+                    <MenuItem value="">
+                      <em>Select Brand</em>
+                    </MenuItem>
+                    {brands.map((brand) => (
+                      <MenuItem key={brand._id} value={brand._id}>
+                        {brand.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Price */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Price"
+                  name="price"
+                  type="number"
+                  value={formData.price}
+                  onChange={handleChange}
+                  required
+                  variant="filled"
+                  placeholder="Enter price"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <AttachMoneyIcon color="action" />
+                      </InputAdornment>
+                    ),
+                    inputProps: { min: 0, step: 0.01 },
+                  }}
+                />
+              </Grid>
+
+              {/* Discount */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Discount"
+                  name="discount"
+                  type="number"
+                  value={formData.discount}
+                  onChange={handleChange}
+                  variant="filled"
+                  placeholder="Enter discount (0-90%)"
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Typography color="text.secondary">%</Typography>
+                      </InputAdornment>
+                    ),
+                    inputProps: { min: 0, max: 90, step: 0.01 },
+                  }}
+                />
+              </Grid>
+
+              {/* Order */}
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Order"
+                  name="order"
+                  type="number"
+                  value={formData.order}
+                  onChange={handleChange}
+                  variant="filled"
+                  placeholder="Enter order"
+                  InputProps={{
+                    inputProps: { min: 0 },
+                  }}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Stock"
+                  name="stock"
+                  type="number"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  required
+                  variant="filled"
+                  placeholder="Enter stock quantity"
+                  InputProps={{
+                    inputProps: { min: 0 },
+                  }}
+                />
+              </Grid>
+
+              {/* Status */}
+              <Grid item xs={12} sm={8}>
+                <FormControl fullWidth variant="filled">
+                  <InputLabel id="status-label">Status</InputLabel>
+                  <Select
+                    labelId="status-label"
+                    name="status"
+                    value={formData.status}
+                    onChange={
+                      handleChange as (
+                        event: SelectChangeEvent<string>,
+                        child: React.ReactNode
+                      ) => void
+                    }
+                    label="Status"
+                  >
+                    <MenuItem value="active">Active</MenuItem>
+                    <MenuItem value="inactive">Inactive</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {/* Checkboxes */}
+              <Grid
+                item
+                xs={12}
+                sm={6}
+                sx={{ display: "flex", alignItems: "center", gap: 2 }}
               >
-                {isSubmitting ? (
-                  <CircularProgress
-                    size={24}
-                    sx={{ color: theme.palette.primary.contrastText }}
-                  />
-                ) : (
-                  "Create Product"
-                )}
-              </SubmitButton>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="isFeatured"
+                      checked={formData.isFeatured}
+                      onChange={handleChange}
+                      color="primary"
+                      sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
+                    />
+                  }
+                  label={
+                    <Typography variant="body1" color="text.primary">
+                      Featured Product
+                    </Typography>
+                  }
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      name="isMenu"
+                      checked={formData.isMenu}
+                      onChange={handleChange}
+                      color="primary"
+                      sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
+                    />
+                  }
+                  label={
+                    <Typography variant="body1" color="text.primary">
+                      Show in Menu
+                    </Typography>
+                  }
+                />
+              </Grid>
+
+              {/* Image Upload */}
+              <Grid item xs={12}>
+                <Box
+                  sx={{
+                    border: `2px dashed ${theme.palette.divider}`,
+                    borderRadius: theme.shape.borderRadius,
+                    p: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    minHeight: imagePreviewUrl ? "auto" : 120,
+                    transition: "all 0.3s ease-in-out",
+                    "&:hover": {
+                      borderColor: theme.palette.primary.light,
+                      backgroundColor: theme.palette.action.hover,
+                    },
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    component="label"
+                    startIcon={<UploadFileIcon />}
+                    sx={{ textTransform: "none", mb: 1 }}
+                  >
+                    {formData.images ? "Change Image" : "Upload Product Image"}
+                    <input
+                      type="file"
+                      name="images"
+                      onChange={handleChange}
+                      hidden
+                      accept="image/*"
+                    />
+                  </Button>
+                  {imagePreviewUrl ? (
+                    <Box
+                      sx={{
+                        mt: 2,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Avatar
+                        src={imagePreviewUrl}
+                        alt="Product Preview"
+                        sx={{
+                          width: 100,
+                          height: 100,
+                          mb: 1,
+                          border: `1px solid ${theme.palette.divider}`,
+                        }}
+                        variant="rounded"
+                      />
+                      <FormHelperText
+                        sx={{ display: "flex", alignItems: "center" }}
+                      >
+                        Selected: {formData.images?.name || "No file selected"}
+                        <IconButton
+                          size="small"
+                          onClick={handleRemoveImage}
+                          color="error"
+                          sx={{ ml: 1 }}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </FormHelperText>
+                    </Box>
+                  ) : (
+                    <FormHelperText>
+                      No image selected. Max file size: 5MB.
+                    </FormHelperText>
+                  )}
+                </Box>
+              </Grid>
+
+              {/* Submit Button */}
+              <Grid item xs={12}>
+                <SubmitButton
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={isSubmitting}
+                  fullWidth
+                >
+                  {isSubmitting ? (
+                    <CircularProgress
+                      size={24}
+                      sx={{ color: theme.palette.primary.contrastText }}
+                    />
+                  ) : (
+                    "Create Product"
+                  )}
+                </SubmitButton>
+              </Grid>
             </Grid>
-          </Grid>
-          <input type="hidden" name="seller" value={formData.seller} />
-        </form>
-      </CardContent>
-    </FormCard>
+            <input type="hidden" name="seller" value={formData.seller} />
+          </form>
+        </FormCard>
+      )}
+    </main>
   );
 };
 
