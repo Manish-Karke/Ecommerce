@@ -10,6 +10,7 @@ productRouter
     uploader().array("images"),
     userValidator(ProductValidationDTO),
     productCtrl.createProduct
-  );
+  )
+  .get(productCtrl.GetAllProductLIst);
 
 module.exports = productRouter;

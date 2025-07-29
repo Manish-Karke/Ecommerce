@@ -56,13 +56,13 @@ export default function ProductCard({
       <Link href={`/products/${product.id}`}>
         <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer">
           <div className="relative overflow-hidden">
-            {/* <Image
-              src={product.image || null}
+            <Image
+              src={product.images || null}
               alt={product.name}
               width={200}
               height={200}
               className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-            /> */}
+            />
             {product.originalPrice && (
               <Badge className="absolute top-2 left-2 bg-red-500">
                 {Math.round(
@@ -105,13 +105,13 @@ export default function ProductCard({
     <Link href={`/products/${product.id}`}>
       <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer h-full">
         <div className="relative overflow-hidden">
-          {/* <Image
-            src={product.image || "/placeholder.svg"}
+          <Image
+            src={product.images || "/placeholder.svg"}
             alt={product.name}
             width={300}
             height={300}
             className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-          /> */}
+          />
 
           {/* Badges */}
           <div className="absolute top-3 left-3 flex flex-col space-y-2">
