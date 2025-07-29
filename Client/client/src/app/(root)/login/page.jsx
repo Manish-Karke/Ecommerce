@@ -41,9 +41,9 @@ const LoginPage = () => {
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
+  
 
   const handleSubmit = async (e) => {
-    // dispatch(addLogginedDetail(formData))
     e.preventDefault();
     setIsLoading(true);
     setApiError(null);
@@ -61,18 +61,29 @@ const LoginPage = () => {
 
       if (response.status === 200) {
         console.log("Login successful:", response.data);
-        // this is kept for the authentication
+
         const { token, user } = response.data;
+
+        // Save token to localStorage
         localStorage.setItem("token", token);
 
+        // Dispatch login to Redux
         dispatch(
           addLogginedDetail({
-            ...user,
-            token: token,
+            user: {
+              email: user.email,
+              token: token,
+              role: user.role,
+              _id: user._id,
+              location: user.location,
+            },
+            isLoggedIn: true,
           })
         );
+
+        // Redirect based on role
         if (user.role === "customer") {
-          router.push("/components/Products");
+          router.push("/Customer/Products");
         } else {
           router.push("/Admin");
         }
