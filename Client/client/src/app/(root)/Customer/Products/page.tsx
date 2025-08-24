@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-// Assuming these components are available in your shadcn/ui setup
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,30 +12,28 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Filter, Grid, List, XCircle } from "lucide-react"; // Added XCircle for clearing filters
-import ProductCard from "@/components/product-cart"; // Assuming this component exists
-import axios from "axios"; // Ensure axios is installed
+import { Search, Filter, Grid, List, XCircle } from "lucide-react"; 
+import ProductCard from "@/components/product-cart"; 
+import axios from "axios"; 
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState(["All"]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [sortBy, setSortBy] = useState("name"); // Default sort by name
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 }); // Consider making max price dynamic
+  const [sortBy, setSortBy] = useState("name");
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 }); 
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showFilters, setShowFilters] = useState(false); // To toggle mobile filter visibility
+  const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(1);
-  const [limit] = useState(15); // Number of items per page
+  const [limit] = useState(15); 
   const [totalPages, setTotalPages] = useState(1);
-  const [totalProductsFound, setTotalProductsFound] = useState(0); // To display total count matching criteria
+  const [totalProductsFound, setTotalProductsFound] = useState(0); 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Memoize the API base URL to prevent unnecessary re-renders
   const API_BASE_URL = useMemo(() => process.env.NEXT_PUBLIC_API_URL, []);
 
-  // Function to fetch products from API, now includes search, category, sort, and pagination
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -44,7 +41,7 @@ export default function ProductsPage() {
       const queryParams = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
-        sortBy: sortBy, // Pass sort parameter to backend
+        sortBy: sortBy,
       });
 
       if (searchQuery) {
@@ -53,9 +50,6 @@ export default function ProductsPage() {
       if (selectedCategory !== "All") {
         queryParams.append("category", selectedCategory);
       }
-      // You might also pass priceRange to the backend for server-side filtering
-      // queryParams.append("minPrice", priceRange.min.toString());
-      // queryParams.append("maxPrice", priceRange.max.toString());
 
       const response = await axios.get(
         `${API_BASE_URL}/product?${queryParams.toString()}`
@@ -64,10 +58,10 @@ export default function ProductsPage() {
 
       if (response.status === 200) {
         setProducts(result.data);
-        setTotalPages(result.options?.No_of_pages || 1); // Ensure fallback for total pages
+        setTotalPages(result.options?.No_of_pages || 1); 
         setTotalProductsFound(
           result.options?.Total_items || result.data.length
-        ); // Assuming Total_items from API
+        ); 
       } else {
         setError(result.message || "Failed to fetch products");
       }
@@ -82,19 +76,18 @@ export default function ProductsPage() {
     }
   }, [page, limit, searchQuery, selectedCategory, sortBy, API_BASE_URL]);
 
-  // Fetch products whenever relevant filters/pagination change
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]); // Dependency on memoized fetchProducts
+  }, [fetchProducts]); 
 
-  // Fetch categories using axios for consistency
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/category`);
         const result = response.data;
         if (response.status === 200) {
-          // Assuming categories have a 'name' property
+   
           setCategories(["All", ...result.data.map((cat: any) => cat.name)]);
         } else {
           console.error("Failed to fetch categories:", result.message);
@@ -106,8 +99,7 @@ export default function ProductsPage() {
     fetchCategories();
   }, [API_BASE_URL]);
 
-  // Filter products by price range on the client-side (if not done by API)
-  // This memo is only for client-side price filtering, if your API handles it, you might remove this.
+
   const clientFilteredProducts = useMemo(() => {
     return products.filter((product: any) => {
       return (
@@ -117,7 +109,7 @@ export default function ProductsPage() {
     });
   }, [products, priceRange]);
 
-  // Handle page changes
+
   const handlePageChange = useCallback(
     (newPage: number) => {
       if (newPage >= 1 && newPage <= totalPages) {
@@ -127,13 +119,12 @@ export default function ProductsPage() {
     [totalPages]
   );
 
-  // Handle clearing all active filters
   const handleClearFilters = useCallback(() => {
     setSearchQuery("");
     setSelectedCategory("All");
     setPriceRange({ min: 0, max: 1000000 });
     setSortBy("name");
-    setPage(1); // Reset to first page
+    setPage(1);
   }, []);
 
   return (
@@ -146,7 +137,6 @@ export default function ProductsPage() {
         </p>
       </div>
 
-      {/* Search and Filters */}
       <div className="mb-8 space-y-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -164,7 +154,6 @@ export default function ProductsPage() {
 
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
           <div className="flex flex-wrap gap-4 items-center">
-            {/* Filter toggle button for mobile */}
             <Button
               variant="outline"
               onClick={() => setShowFilters(!showFilters)}
@@ -173,8 +162,6 @@ export default function ProductsPage() {
               <Filter className="h-4 w-4" />
               Filters
             </Button>
-
-            {/* Filters (conditionally shown on mobile) */}
             <div
               className={`flex flex-wrap gap-4 ${
                 showFilters ? "block" : "hidden lg:flex"
@@ -217,7 +204,6 @@ export default function ProductsPage() {
                 </SelectContent>
               </Select>
 
-              {/* Price Range Inputs (example, needs proper implementation for state handling) */}
               <div className="flex items-center gap-2">
                 <Input
                   type="number"
