@@ -21,7 +21,7 @@ const CategorySchema = new mongoose.Schema(
       default: null,
     },
 
-    images: [
+    image: [
       {
         publicId: String,
         url: String,

@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-// ... (imports and state setup)
-
 export default function Example() {
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -13,8 +11,10 @@ export default function Example() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8080/api/category");
-        setCategories(response.data.docs); // Assuming the categories are in a 'docs' array
+        const response = await axios.get(
+          process.env.NEXT_PUBLIC_API_URL + "/category"
+        );
+        setCategories(response.data.data); // ✅ use data not docs
         setIsLoading(false);
       } catch (err) {
         setError("Failed to fetch categories. Please try again later.");
@@ -41,30 +41,30 @@ export default function Example() {
           <h2 className="text-2xl font-bold text-gray-900">Collections</h2>
 
           <div className="mt-6 space-y-12 lg:grid lg:grid-cols-3 lg:gap-x-6 lg:space-y-0">
-            {categories.map((category) => (
-              <div key={category._id} className="group relative">
-                <div className="relative h-80 w-full overflow-hidden rounded-lg bg-white sm:aspect-[2/1] lg:aspect-square group-hover:opacity-75">
-                  {/* You'll need to update this to point to the actual image URL from your fetched data */}
-                  <img
-                    alt={category.name}
-                    src={
-                      category.images?.[0]?.path ||
-                      "https://via.placeholder.com/600x400.png?text=No+Image"
-                    }
-                    className="h-full w-full object-cover object-center"
-                  />
+            {Array.isArray(categories) &&
+              categories.map((category) => (
+                <div key={category._id} className="group relative">
+                  <div className="relative h-80 w-full overflow-hidden rounded-lg bg-white sm:aspect-[2/1] lg:aspect-square group-hover:opacity-75">
+                    <img
+                      alt={category.name}
+                      src={
+                        category.image?.[0]?.url || // ✅ FIXED
+                        "https://qualitycomputer.com.np/web/image/product.template/51331/image_1024?unique=d293e2c"
+                      }
+                      className="h-full w-full object-cover object-center"
+                    />
+                  </div>
+                  <h3 className="mt-6 text-sm text-gray-500">
+                    <a href={`/category/${category._id}`}>
+                      <span className="absolute inset-0" />
+                      {category.name}
+                    </a>
+                  </h3>
+                  <p className="text-base font-semibold text-gray-900">
+                    {category.description || "No description available"}
+                  </p>
                 </div>
-                <h3 className="mt-6 text-sm text-gray-500">
-                  <a href={`/category/${category._id}`}>
-                    <span className="absolute inset-0" />
-                    {category.name}
-                  </a>
-                </h3>
-                <p className="text-base font-semibold text-gray-900">
-                  {category.description || "No description available"}
-                </p>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
       </div>
