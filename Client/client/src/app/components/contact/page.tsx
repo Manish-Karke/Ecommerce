@@ -9,11 +9,11 @@ export default function ContactPage() {
     message: "",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: { target: { name: any; value: any } }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
     // You can connect this with an API, email service, or database
     console.log("Form submitted:", formData);
@@ -54,7 +54,7 @@ export default function ContactPage() {
           value={formData.message}
           onChange={handleChange}
           placeholder="Your Message"
-          rows="5"
+          // rows="5"
           className="w-full p-3 border rounded-lg"
           required
         ></textarea>
