@@ -1,8 +1,17 @@
-const userValidator = require("../../middleware/middleware.validate");
-const cartCtrl = require("./cart.controller");
-const { createCartSchema } = require("./cart.validation");
+const cartController = require("./cart.controller");
+const {
+  validateAddItem,
+  validateUpdateQuantity,
+} = require("./cart.validation");
 
 const cartRouter = require("express").Router();
-cartRouter.post("/", userValidator(createCartSchema), cartCtrl.createCart);
+cartRouter.post("/", validateAddItem, cartController.addItem);
+cartRouter.get("/cart", cartController.getCart);
+cartRouter.patch(
+  "/cart/items/:productId",
+  validateUpdateQuantity,
+  cartController.updateQuantity
+);
+cartRouter.delete("/cart/items/:productId", cartController.removeItem);
 
 module.exports = cartRouter;

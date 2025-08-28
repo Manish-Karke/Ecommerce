@@ -1,34 +1,32 @@
-import Joi from "joi";
+const Joi = require("joi");
 
-// For creating a new cart
-export const createCartSchema = Joi.object({
-  userId: Joi.string()
-    .pattern(/^[0-9a-fA-F]{24}$/) // ObjectId format
-    .required(),
+exports.validateAddItem = (req, res, next) => {
+  const itemSchema = Joi.object({
+    productId: Joi.string().required(),
+    quantity: Joi.number().min(1).required(),
+    priceAtAddition: Joi.number().required(),
+  });
 
-  sessionId: Joi.string().allow(null).default(null),
+  const schema = Joi.object({
+    userId: Joi.string().optional(),
+    sessionId: Joi.string().optional(),
+    items: Joi.array().items(itemSchema).required(), // items should be an array of objects
+  }).or("userId", "sessionId");
 
-  items: Joi.array()
-    .items(
-      Joi.object({
-        productId: Joi.string().required(),
-        quantity: Joi.number().integer().min(1).required(),
-        priceAtAddition: Joi.number().precision(2).required(),
-      })
-    )
-    .min(1)
-    .required(),
-});
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+  next();
+};
 
-// For updating an existing cart
-export const updateCartSchema = Joi.object({
-  sessionId: Joi.string().allow(null),
+exports.validateUpdateQuantity = (req, res, next) => {
+  const schema = Joi.object({
+    userId: Joi.string().optional(),
+    sessionId: Joi.string().optional(),
+    productId: Joi.string().required(), // You need to specify which product's quantity is being updated
+    quantity: Joi.number().min(1).required(),
+  }).or("userId", "sessionId");
 
-  items: Joi.array().items(
-    Joi.object({
-      productId: Joi.string(),
-      quantity: Joi.number().integer().min(1),
-      priceAtAddition: Joi.number().precision(2),
-    })
-  ),
-}).min(1);
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+  next();
+};
