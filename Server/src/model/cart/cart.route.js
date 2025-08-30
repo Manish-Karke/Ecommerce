@@ -6,9 +6,9 @@ const {
 
 const cartRouter = require("express").Router();
 cartRouter.post("/", validateAddItem, cartController.addItem);
-cartRouter.get("/cart", cartController.getCart);
+cartRouter.get("/", cartController.getCart);
 cartRouter.patch(
-  "/cart/items/:productId",
+  "/items/:productId",
   validateUpdateQuantity,
   cartController.updateQuantity
 );
