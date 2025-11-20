@@ -2,32 +2,40 @@ const cartService = require("./cart.service");
 
 exports.addItem = async (req, res) => {
   try {
+    console.log("Cart controller - addItem called");
+    console.log("Request body:", req.body);
+
     const { userId, sessionId, items } = req.body;
 
     // Validate input
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
+        success: false,
         error: "Items array is required and cannot be empty",
       });
     }
 
     if (!userId && !sessionId) {
       return res.status(400).json({
+        success: false,
         error: "Either userId or sessionId is required",
       });
     }
 
-    // Use the service to add items
+    // Call service
     const cart = await cartService.addItem({ userId, sessionId, items });
 
     res.status(200).json({
       success: true,
+      message: "Item added to cart successfully",
       cart,
     });
   } catch (error) {
-    console.error("Error adding item to cart:", error);
+    console.error("Controller error:", error.message);
     res.status(500).json({
+      success: false,
       error: "Failed to add item to cart",
+      message: error.message,
     });
   }
 };

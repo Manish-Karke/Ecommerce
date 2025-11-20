@@ -9,15 +9,16 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action) => {
-      const item = action.payload;
-      const existing = state.items.find((i) => i.id === item.id);
+      const { id, quantity, ...rest } = action.payload;
+      const existing = state.items.find((i) => i.id === id);
 
       if (existing) {
-        existing.quantity += 1; // increase quantity if exists
+        existing.quantity += quantity; // dynamic quantity
       } else {
-        state.items.push({ ...item, quantity: 1 });
+        state.items.push({ id, ...rest, quantity });
       }
     },
+
     removeFromCart: (state, action) => {
       state.items = state.items.filter((i) => i.id !== action.payload);
     },

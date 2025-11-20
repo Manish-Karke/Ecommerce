@@ -12,6 +12,6 @@ cartRouter.patch(
   validateUpdateQuantity,
   cartController.updateQuantity
 );
-cartRouter.delete("/cart/items/:productId", cartController.removeItem);
+cartRouter.delete("/items/:productId", cartController.removeItem);
 
 module.exports = cartRouter;
