@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const { Roles } = require("../../config/constant");
 
 const authValidatorRegistrationDTO = Joi.object({
   username: Joi.string().min(3).max(30).trim().required(),
@@ -9,7 +10,7 @@ const authValidatorRegistrationDTO = Joi.object({
     .pattern(/^[0-9]{10,15}$/) // Matches 10 to 15 digits
     .required(),
 
-  role: Joi.string().valid("user", "admin", "manager", "customer").required(),
+  role: Joi.string().valid("admin", "customer").default(Roles.CUSTOMER),
 
   password: Joi.string()
     .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[\d])(?=.*[\W_]).{8,25}$/)

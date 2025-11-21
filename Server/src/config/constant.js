@@ -10,6 +10,7 @@ const Gender = {
 
 const Roles = {
   ADMIN: "admin",
+  CUSTOMER: "customer",
 };
 
 module.exports = {
