@@ -1,94 +1,96 @@
-const cartService = require("./cart.service");
+const CartService = require("./cart.service");
 
-exports.addItem = async (req, res) => {
-  try {
-    console.log("Cart controller - addItem called");
-    console.log("Request body:", req.body);
+class CartController {
+  static async addItem(req, res) {
+    try {
+      const { userId, sessionId, items } = req.body;
 
-    const { userId, sessionId, items } = req.body;
+      const cart = await CartService.addItem({ userId, sessionId, items });
 
-    // Validate input
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({
+      res.status(200).json({
+        success: true,
+        message: "Items added to cart",
+        data: cart,
+      });
+    } catch (error) {
+      res.status(400).json({
         success: false,
-        error: "Items array is required and cannot be empty",
+        error: error.message,
       });
     }
+  }
 
-    if (!userId && !sessionId) {
-      return res.status(400).json({
+  static async getCart(req, res) {
+    try {
+      const { userId, sessionId } = req.query;
+      const cart = await CartService.getCart({ userId, sessionId });
+
+      res.status(200).json({
+        success: true,
+        data: cart,
+      });
+    } catch (error) {
+      res.status(400).json({
         success: false,
-        error: "Either userId or sessionId is required",
+        error: error.message,
       });
     }
-
-    // Call service
-    const cart = await cartService.addItem({ userId, sessionId, items });
-
-    res.status(200).json({
-      success: true,
-      message: "Item added to cart successfully",
-      cart,
-    });
-  } catch (error) {
-    console.error("Controller error:", error.message);
-    res.status(500).json({
-      success: false,
-      error: "Failed to add item to cart",
-      message: error.message,
-    });
   }
-};
 
-exports.getCart = async (req, res) => {
-  try {
-    const { userId, sessionId } = req.query;
-    const cart = await cartService.getCart({ userId, sessionId });
-    res.status(200).json({ data: cart });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+  static async updateQuantity(req, res) {
+    try {
+      const { userId, sessionId, productId, quantity } = req.body;
 
-exports.updateQuantity = async (req, res) => {
-  try {
-    const { userId, sessionId, items } = req.body;
-    const { productId, quantity } = items[0]; // Assume single item update
-    console.log("productId", productId);
+      if (!productId || quantity === undefined) {
+        return res.status(400).json({
+          success: false,
+          error: "productId and quantity are required",
+        });
+      }
 
-    const cart = await cartService.updateQuantity({
-      userId,
-      sessionId,
-      productId,
-      quantity,
-    });
+      const cart = await CartService.updateQuantity({
+        userId,
+        sessionId,
+        productId,
+        quantity,
+      });
 
-    if (!cart) {
-      return res.status(404).json({ error: "Cart or item not found" });
+      res.status(200).json({
+        success: true,
+        message: "Quantity updated",
+        data: cart,
+      });
+    } catch (error) {
+      res.status(error.message.includes("not found") ? 404 : 400).json({
+        success: false,
+        error: error.message,
+      });
     }
+  }
 
-    res.status(200).json(cart);
-  } catch (err) {
-    console.error("Error in updateQuantity:", err);
-    if (
-      err.message === "Cart not found" ||
-      err.message === "Item not in cart"
-    ) {
-      return res.status(404).json({ error: err.message });
+  static async removeItem(req, res) {
+    try {
+      const { userId, sessionId } = req.body;
+      const { productId } = req.params;
+
+      const cart = await CartService.removeItem({
+        userId,
+        sessionId,
+        productId,
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Item removed from cart",
+        data: cart,
+      });
+    } catch (error) {
+      res.status(error.message.includes("not found") ? 404 : 400).json({
+        success: false,
+        error: error.message,
+      });
     }
-    res.status(500).json({
-      error: "An internal server error occurred",
-      details: err.message,
-    });
   }
-};
-exports.removeItem = async (req, res) => {
-  try {
-    const { userId, sessionId } = req.body;
-    const { productId } = req.params;
-    const cart = await cartService.removeItem({ userId, sessionId, productId });
-    res.status(200).json({ message: "Item removed", data: cart });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+}
+
+module.exports = CartController;

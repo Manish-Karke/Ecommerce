@@ -96,7 +96,7 @@
 import { useState } from "react";
 import axios from "axios";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product  }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -105,7 +105,7 @@ export default function ProductCard({ product }) {
       setLoading(true);
       setMessage("");
 
-      const res = await axios.post("http://localhost:8080/api/cart", {
+      const res = await axios.post(process.env.NEXT_PUBLIC_API_URL + "/cart", {
         productId: product._id, // assuming MongoDB id
         quantity: 1,
       });

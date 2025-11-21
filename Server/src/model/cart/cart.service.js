@@ -1,156 +1,104 @@
-const CartModel = require("./cart.model");
 
-const whoFilter = ({ userId, sessionId }) =>
-  userId ? { userId } : { sessionId };
+const Cart = require("./cart.model");
 
-// async function addItem({ userId, sessionId, items }) {
-//   const filter = whoFilter({ userId, sessionId });
-
-//   let cart = await CartModel.findOne(filter);
-
-//   if (!cart) {
-//     // Create new cart with items
-//     cart = await CartModel.create({ ...filter, items });
-//   } else {
-//     // Add items to existing cart
-//     for (const newItem of items) {
-//       const existingItemIndex = cart.items.findIndex(
-//         (cartItem) =>
-//           cartItem &&
-//           cartItem.productId.toString() === newItem.productId.toString()
-//       );
-
-//       if (existingItemIndex > -1) {
-//         // Item exists - increase quantity
-//         cart.items[existingItemIndex].quantity += newItem.quantity;
-//       } else {
-//         // New item - add to cart
-//         cart.items.push(newItem);
-//       }
-//     }
-//     await cart.save();
-//   }
-
-//   // Populate product details
-//   await cart.populate("items.productId", "name price images brandId");
-//   return cart;
-// }
-async function addItem({ userId, sessionId, items }) {
-  try {
-    console.log("=== ADD ITEM DEBUG ===");
-    console.log("Input params:", { userId, sessionId, items });
-
-    // Validation
+class CartService {
+  static getFilter({ userId, sessionId }) {
     if (!userId && !sessionId) {
       throw new Error("Either userId or sessionId is required");
     }
+    return userId ? { userId } : { sessionId };
+  }
 
+  static async populateCart(cart) {
+    if (!cart) return null;
+    await cart.populate("items.productId", "name price images brandId");
+    return cart;
+  }
+
+  static async addItem({ userId, sessionId, items }) {
     if (!items || !Array.isArray(items) || items.length === 0) {
-      throw new Error("Items must be a non-empty array");
+      throw new Error("Items array is required");
     }
 
-    // Validate each item
-    for (const item of items) {
-      if (!item.productId) {
-        throw new Error("Each item must have a productId");
-      }
-      if (!item.quantity || item.quantity <= 0) {
-        throw new Error("Each item must have quantity > 0");
-      }
-    }
+    const filter = this.getFilter({ userId, sessionId });
 
-    const filter = whoFilter({ userId, sessionId });
-    let cart = await CartModel.findOne(filter);
+    let cart = await Cart.findOne(filter);
 
     if (!cart) {
-      // Create new cart
-      console.log("Creating new cart...");
-      cart = await CartModel.create({ ...filter, items });
+      cart = new Cart({ ...filter, items });
     } else {
-      // Update existing cart
-      console.log("Updating existing cart...");
-
       for (const newItem of items) {
-        const existingItemIndex = cart.items.findIndex(
-          (cartItem) =>
-            cartItem &&
-            cartItem.productId.toString() === newItem.productId.toString()
+        const existingItem = cart.items.find(
+          (item) => item.productId.toString() === newItem.productId.toString()
         );
 
-        if (existingItemIndex > -1) {
-          // Item exists - increase quantity
-          cart.items[existingItemIndex].quantity += newItem.quantity;
-          console.log(`Updated quantity for ${newItem.productId}`);
+        if (existingItem) {
+          existingItem.quantity += newItem.quantity;
         } else {
-          // New item - add to cart
           cart.items.push(newItem);
-          console.log(`Added new item ${newItem.productId}`);
         }
       }
-
-      await cart.save();
     }
 
-    // Populate product details
-    await cart.populate("items.productId", "name price images brandId");
-    console.log("=== ADD ITEM SUCCESS ===");
-
-    return cart;
-  } catch (error) {
-    console.error("=== ADD ITEM ERROR ===");
-    console.error("Error:", error.message);
-    throw error;
-  }
-}
-async function getCart({ userId, sessionId }) {
-  const filter = whoFilter({
-    userId,
-    sessionId,
-  });
-  return (
-    CartModel.findOne(filter).populate(
-      "items.productId",
-      "name price images brandId"
-    ) || { items: [] }
-  );
-}
-
-async function updateQuantity({ userId, sessionId, productId, quantity }) {
-  const filter = whoFilter({ userId, sessionId });
-
-  const cart = await CartModel.findOne(filter);
-  if (!cart) {
-    throw new Error("Cart not found");
+    await cart.save();
+    return this.populateCart(cart);
   }
 
-  // Add the null check here
-  const idx = cart.items.findIndex(
-    (item) => item && item.productId.toString() === productId
-  );
-
-  if (idx === -1) {
-    throw new Error("Item not in cart");
+ 
+  static async getCart({ userId, sessionId }) {
+    const filter = this.getFilter({ userId, sessionId });
+    const cart = await Cart.findOne(filter);
+    return this.populateCart(cart) || { items: [], userId, sessionId };
   }
 
-  cart.items[idx].quantity = quantity;
-  await cart.save();
 
-  // You would also populate the cart here before returning it
-  await cart.populate("items.productId", "name price images");
+  static async updateQuantity({ userId, sessionId, productId, quantity }) {
+    if (!productId) throw new Error("productId is required");
+    if (!quantity || quantity < 1) throw new Error("quantity must be >= 1");
 
-  return cart;
+    const filter = this.getFilter({ userId, sessionId });
+    const cart = await Cart.findOne(filter);
+
+    if (!cart) throw new Error("Cart not found");
+
+    const item = cart.items.find(
+      (i) => i.productId.toString() === productId.toString()
+    );
+
+    if (!item) throw new Error("Item not found in cart");
+
+    item.quantity = quantity;
+    await cart.save();
+
+    return this.populateCart(cart);
+  }
+
+
+  static async removeItem({ userId, sessionId, productId }) {
+    const filter = this.getFilter({ userId, sessionId });
+    const cart = await Cart.findOne(filter);
+
+    if (!cart) throw new Error("Cart not found");
+
+    const initialLength = cart.items.length;
+    cart.items = cart.items.filter(
+      (i) => i.productId.toString() !== productId.toString()
+    );
+
+    if (cart.items.length === initialLength) {
+      throw new Error("Item not found in cart");
+    }
+
+    await cart.save();
+    return this.populateCart(cart);
+  }
+
+ 
+  static async clearCart({ userId, sessionId }) {
+    const filter = this.getFilter({ userId, sessionId });
+    await Cart.deleteOne(filter);
+    return { message: "Cart cleared", items: [] };
+  }
 }
-async function removeItem({ userId, sessionId, productId }) {
-  const filter = whoFilter({
-    userId,
-    sessionId,
-  });
-  const cart = await CartModel.findOne(filter);
-  if (!cart) throw new Error("cart is not found");
 
-  cart.items = cart.items.filter((i) => i.productId !== productId);
-  await cart.save();
-  return cart;
-}
-
-module.exports = { addItem, getCart, updateQuantity, removeItem };
+module.exports = CartService;

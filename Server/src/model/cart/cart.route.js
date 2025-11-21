@@ -1,17 +1,17 @@
-const cartController = require("./cart.controller");
+const CartController = require("./cart.controller");
 const {
   validateAddItem,
   validateUpdateQuantity,
 } = require("./cart.validation");
 
 const cartRouter = require("express").Router();
-cartRouter.post("/", validateAddItem, cartController.addItem);
-cartRouter.get("/", cartController.getCart);
+cartRouter.post("/add", validateAddItem, CartController.addItem);
+cartRouter.get("/", CartController.getCart);
 cartRouter.patch(
   "/items/:productId",
   validateUpdateQuantity,
-  cartController.updateQuantity
+  CartController.updateQuantity
 );
-cartRouter.delete("/items/:productId", cartController.removeItem);
+cartRouter.delete("/items/:productId", CartController.removeItem);
 
 module.exports = cartRouter;
