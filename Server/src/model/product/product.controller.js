@@ -1,72 +1,53 @@
+// controllers/product.controller.js
 const productSvc = require("./product.service");
 
 class ProductController {
   createProduct = async (req, res, next) => {
     try {
-      const userDetails = await productSvc.transformCreateProduct(req);
-      const data = await productSvc.createProduct(userDetails);
+      const payload = await productSvc.transformCreateProduct(req);
+      const product = await productSvc.createProduct(payload);
 
-      res.json({
-        data: data,
-        status: 200,
-        messages: "Product Created Successfully",
-        options: null,
+      res.status(201).json({
+        success: true,
+        message: "Product created successfully",
+        data: product,
       });
     } catch (error) {
       next(error);
     }
   };
 
-  //get all produdt
-  GetAllProductLIst = async (req, res, next) => {
+  // Now supports: ?search=phone&categoryId=abc&brandId=xyz,xyz&minPrice=100&maxPrice=500&sortBy=price_low
+  GetAllProductList = async (req, res, next) => {
     try {
-      let filter = {};
-      if (req.query.status) {
-        filter = {
-          ...filter,
-          status: req.query.status,
-        };
-      }
-      if (req.query.search) {
-        filter = {
-          ...filter,
-          name: RegExp(req.query.search, "i"),
-        };
-      }
       const { data, pagination } = await productSvc.listAllProduct(
-        filter,
+        {},
         req.query
       );
-      res.json({
-        data: data,
-        status: 200,
-        message: "product has been listed",
-        options: pagination,
+
+      res.status(200).json({
+        success: true,
+        message: "Products fetched successfully",
+        data,
+        pagination,
       });
     } catch (error) {
       next(error);
     }
   };
-  //just by passing id
 
-  //target->params
-  //serching->query
-  //create/update->body
   listProductById = async (req, res, next) => {
     try {
-      const params = req.params.id;
-
-      const userDetail = await productSvc.getProductById({ _id: params });
-      if (!userDetail) {
-        res.json({
-          message: "product id is not listed",
-          status: 400,
-        });
+      const product = await productSvc.getProductById(req.params.id);
+      if (!product) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Product not found" });
       }
-      res.json({
-        data: userDetail,
-        message: "you data is listed",
-        status: 200,
+
+      res.status(200).json({
+        success: true,
+        data: product,
       });
     } catch (error) {
       next(error);
@@ -75,50 +56,46 @@ class ProductController {
 
   updateProductById = async (req, res, next) => {
     try {
-      const id = req.params.id;
-
-      const userDetail = await productSvc.getProductById({_id: id});
-
-      if(!userDetail){
-        throw {
-          status: 422,
-          message: "Invalid Id"
-        }
+      const oldProduct = await productSvc.getProductById(req.params.id);
+      if (!oldProduct) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Product not found" });
       }
 
-      const transformedDetail = await productSvc.transformUpdateProductData(req, userDetail)
-      const updatedData = await productSvc.updateProductById({_id: userDetail._id}, transformedDetail);
+      const payload = await productSvc.transformUpdateProductData(
+        req,
+        oldProduct
+      );
+      const updated = await productSvc.updateProductById(
+        req.params.id,
+        payload
+      );
 
-      res.json({
-        data: updatedData,
-        status: 200,
-        message: "Successfully updated",
-        options: null,
-      })
+      res.status(200).json({
+        success: true,
+        message: "Product updated successfully",
+        data: updated,
+      });
     } catch (error) {
-      throw error
+      next(error);
     }
-  }
+  };
 
   deleteProductById = async (req, res, next) => {
     try {
-      const params = req.params.id;
-      const userDetail = await productSvc.getProductById({ _id: params });
-
-      if (!userDetail) {
-        throw {
-          message: "invalid Id",
-          status: 404,
-        };
+      const product = await productSvc.getProductById(req.params.id);
+      if (!product) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Product not found" });
       }
-      await productSvc.deleteProductById({
-        _id: userDetail.id,
-      });
-      res.json({
-        message: "Product sucessfully Deleted",
-        status: 200,
-        data: userDetail,
-        option: null,
+
+      await productSvc.deleteProductById(req.params.id);
+
+      res.status(200).json({
+        success: true,
+        message: "Product deleted successfully",
       });
     } catch (error) {
       next(error);
@@ -127,5 +104,4 @@ class ProductController {
 }
 
 const productCtrl = new ProductController();
-
 module.exports = productCtrl;

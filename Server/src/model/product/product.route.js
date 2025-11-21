@@ -11,6 +11,6 @@ productRouter
     userValidator(ProductValidationDTO),
     productCtrl.createProduct
   )
-  .get(productCtrl.GetAllProductLIst);
+  .get(productCtrl.GetAllProductList);
 
 module.exports = productRouter;
