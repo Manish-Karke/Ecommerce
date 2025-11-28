@@ -13,4 +13,6 @@ productRouter
   )
   .get(productCtrl.GetAllProductList);
 
+productRouter.route("/:id").get(productCtrl.listProductById);
+
 module.exports = productRouter;

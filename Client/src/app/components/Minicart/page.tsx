@@ -1,4 +1,4 @@
-// components/MiniCartPopover.tsx   ← THIS IS THE CORRECT PLACE
+// components/MiniCartPopover.tsx  ← FINAL WORKING VERSION
 "use client";
 
 import { useSelector, useDispatch } from "react-redux";
@@ -7,7 +7,7 @@ import {
   decrementQuantity,
   removeItem,
 } from "@/redux/slices/counter/cart";
-import { ShoppingCart, Plus, Minus, X, ArrowRight } from "lucide-react";
+import { ShoppingCart, Plus, Minus, X } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -15,9 +15,11 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // ← ADD THIS
 
 export default function MiniCartPopover() {
   const dispatch = useDispatch();
+  const router = useRouter(); // ← ADD THIS
   const items = useSelector((state: any) => state.cart.items);
 
   const totalItems = items.reduce(
@@ -28,6 +30,12 @@ export default function MiniCartPopover() {
     (sum: number, item: any) => sum + item.price * item.quantity,
     0
   );
+
+  const handleNavigate = (path: string) => {
+    router.push(path);
+    // This line below closes the popover automatically
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+  };
 
   return (
     <Popover>
@@ -45,12 +53,15 @@ export default function MiniCartPopover() {
       <PopoverContent className="w-80 p-0 mr-4" align="end" sideOffset={10}>
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-bold text-lg">Cart ({totalItems})</h3>
-          <Link href="cart" className="text-sm text-indigo-600 hover:underline">
+          <button
+            onClick={() => handleNavigate("cart")}
+            className="text-sm text-indigo-600 hover:underline"
+          >
             View All →
-          </Link>
+          </button>
         </div>
 
-        <div className="max-h-96 overflow-y-auto ">
+        <div className="max-h-96 overflow-y-auto">
           {items.length === 0 ? (
             <p className="text-center py-12 text-gray-500">
               Your cart is empty
@@ -80,7 +91,7 @@ export default function MiniCartPopover() {
                     className="h-8 w-8"
                     onClick={() => dispatch(decrementQuantity(item.id))}
                   >
-                    <Minus className="w-4 h-4" />
+                    <Minus className="w-4 w-4" />
                   </Button>
                   <span className="w-10 text-center font-bold text-sm">
                     {item.quantity}
@@ -91,7 +102,7 @@ export default function MiniCartPopover() {
                     className="h-8 w-8"
                     onClick={() => dispatch(addItem({ ...item, quantity: 1 }))}
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-4 w-4" />
                   </Button>
                   <Button
                     size="icon"
@@ -99,7 +110,7 @@ export default function MiniCartPopover() {
                     className="text-red-500 hover:bg-red-50"
                     onClick={() => dispatch(removeItem(item.id))}
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -114,14 +125,18 @@ export default function MiniCartPopover() {
               <span>NRS {totalPrice}</span>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <Link href="/cart">
+              <button onClick={() => handleNavigate("cart")} className="w-full">
                 <Button variant="outline" className="w-full">
                   View Cart
                 </Button>
-              </Link>
-              <Link href="/checkout">
+              </button>
+
+              <button
+                onClick={() => handleNavigate("/checkout")}
+                className="w-full"
+              >
                 <Button className="w-full">Checkout</Button>
-              </Link>
+              </button>
             </div>
           </div>
         )}

@@ -7,6 +7,7 @@ import ProductCard from "@/components/product-card";
 import ProductGridEmpty from "./components/ProductGridEmpty";
 import ProductGridError from "./components/ProductGridError";
 import ProductGridLoading from "./components/ProductGridLoading";
+
 interface Product {
   _id: string;
   name: string;
@@ -43,22 +44,18 @@ export default function ProductGrid({
       ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
       : "space-y-6";
 
-  // Loading state
   if (isPending || isLoading) {
     return <ProductGridLoading viewMode={viewMode} />;
   }
 
-  // Error state
   if (error) {
     return <ProductGridError error={error} onRetry={onRetry} />;
   }
 
-  // Empty state
   if (products.length === 0) {
     return <ProductGridEmpty />;
   }
 
-  // Products list
   return (
     <motion.div
       className={gridClass}
@@ -74,20 +71,17 @@ export default function ProductGrid({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            whileHover={{ y: -8 }}
             transition={{ duration: 0.3 }}
           >
+            {/* PASS THE FULL PRODUCT — NOT A FLATTENED VERSION */}
             <ProductCard
-              product={{
-                id: product._id,
-                name: product.name,
-                price: product.price / 100,
-                images: product.images?.[0]?.url,
-                category: product.categoryId.name,
-                brand: product.brandId.name,
-              }}
+              product={product}  // ← THIS IS THE ONLY CHANGE
               variant={viewMode === "list" ? "compact" : "default"}
-              onAddToCart={() => onAddToCart(product._id)}
+              onAddToCart={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAddToCart(product._id);
+              }}
             />
           </motion.div>
         ))}
