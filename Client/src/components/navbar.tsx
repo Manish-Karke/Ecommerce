@@ -15,13 +15,15 @@ import {
   User,
   Heart,
 } from "lucide-react";
-import { useCart } from "@/contexts/cart-context";
+// components/navbar.tsx → Fix this part
+import { useSelector } from "react-redux";
+import MiniCartPopover from "@/app/components/Minicart/page";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const pathname = usePathname();
-  const { state } = useCart();
+
 
   const navigation = [
     { name: "Home", href: "/" },
@@ -89,7 +91,7 @@ export default function Navbar() {
             </Button>
 
             {/* Cart */}
-            <Link href="/components/cart">
+            {/* <Link href="/components/cart">
               <Button variant="ghost" size="sm" className="relative">
                 <ShoppingCart className="h-5 w-5" />
                 {state.itemCount > 0 && (
@@ -101,7 +103,9 @@ export default function Navbar() {
                   </Badge>
                 )}
               </Button>
-            </Link>
+            </Link> */}
+
+            <MiniCartPopover/>
 
             {/* User Account */}
             <Link href="/login">

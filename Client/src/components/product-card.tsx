@@ -7,10 +7,12 @@ interface ProductCardProps {
   product: {
     id: string;
     name: string;
-    description: string;
+    // afterDiscount: number;
+    // description: string;
     price: number;
     images: string;
     category: string;
+    brand: string;
   };
   variant: "default" | "compact";
   onAddToCart: () => void;
@@ -35,9 +37,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
       />
       <div className="p-4">
         <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
-        <p className="text-sm text-gray-600 line-clamp-2">
-          {product.description}
-        </p>
         <p className="text-indigo-600 font-bold mt-2">${product.price}</p>
         <p className="text-sm text-gray-500">{product.category}</p>
         <Button

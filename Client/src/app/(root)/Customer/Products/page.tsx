@@ -10,18 +10,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Grid, List, ShoppingCart, Filter } from "lucide-react";
-import ProductCard from "@/components/product-cart";
+import { Search, Grid, List, ShoppingCart } from "lucide-react";
 import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
-import toast from "react-hot-toast"; // Recommended: better than alert()
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
-// Improved Checkbox using shadcn style
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+// Redux imports
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "@/redux/store";
+import { addItem } from "@/redux/slices/counter/cart";
 
-// Types
+// Import the new separated components
+import ProductFilters from "./ProducrFilters";
+import ProductGrid from "./ProdcutGrid";
 interface Product {
   _id: string;
   name: string;
@@ -29,15 +30,16 @@ interface Product {
   price: number;
   afterDiscount?: number;
   discount?: number;
-  images?: string[];
-  category?: { _id: string; name: string };
-  brand?: { _id: string; name: string };
+  images: { url: string; alt?: string }[];
+  categoryId: { _id: string; name: string };
+  brandId: { _id: string; name: string };
 }
 
 interface Category {
   _id: string;
   name: string;
 }
+
 interface Brand {
   _id: string;
   name: string;
@@ -53,23 +55,16 @@ export default function ProductsPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [cart, setCart] = useState<{ id: string; quantity: number }[]>([]);
-  const [isPending, startTransition] = useTransition(); // Smooth UX
+  const [isPending, startTransition] = useTransition();
+
+  // Redux hooks
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state: RootState) => state.cart.items);
 
   const API_BASE_URL = useMemo(
     () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api",
     []
   );
-
-  // Cart persistence
-  useEffect(() => {
-    const saved = localStorage.getItem("cart");
-    if (saved) setCart(JSON.parse(saved));
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
 
   // Fetch filters (categories & brands)
   useEffect(() => {
@@ -119,18 +114,19 @@ export default function ProductsPage() {
   }, [fetchProducts]);
 
   // Add to Cart
-  const addToCart = async (productId: string) => {
+  const handleAddToCart = async (productId: string) => {
+    const product = products.find((p) => p._id === productId);
+    if (!product) return toast.error("Product not found");
+
     try {
+      // Backend sync
       let sessionId = localStorage.getItem("sessionId");
       if (!sessionId) {
         sessionId = `sess_${Date.now()}_${Math.random()
           .toString(36)
-          .substr(2, 9)}`;
+          .slice(2, 9)}`;
         localStorage.setItem("sessionId", sessionId);
       }
-
-      const product = products.find((p) => p._id === productId);
-      if (!product) return toast.error("Product not found");
 
       await axios.post(`${API_BASE_URL}/cart/add`, {
         sessionId,
@@ -143,15 +139,16 @@ export default function ProductsPage() {
         ],
       });
 
-      setCart((prev) => {
-        const existing = prev.find((i) => i.id === productId);
-        if (existing) {
-          return prev.map((i) =>
-            i.id === productId ? { ...i, quantity: i.quantity + 1 } : i
-          );
-        }
-        return [...prev, { id: productId, quantity: 1 }];
-      });
+     
+      dispatch(
+        addItem({
+          id: product._id,
+          name: product.name,
+          price: product.afterDiscount || product.price,
+          image: product.images?.[0] || "/placeholder.jpg",
+          quantity: 1,
+        })
+      );
 
       toast.success("Added to cart!");
     } catch (err: any) {
@@ -159,7 +156,11 @@ export default function ProductsPage() {
     }
   };
 
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  // Calculate total cart items from Redux state
+  const cartCount = cartItems.reduce(
+    (sum: number, item: any) => sum + item.quantity,
+    0
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -204,152 +205,39 @@ export default function ProductsPage() {
             >
               <List className="h-5 w-5" />
             </Button>
-            <Button variant="outline" size="icon" className="relative">
+            {/* <Button variant="outline" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
               {cartCount > 0 && (
                 <Badge className="absolute -top-2 -right-2 h-6 w-6 p-0 flex items-center justify-center">
                   {cartCount}
                 </Badge>
               )}
-            </Button>
+            </Button> */}
           </div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <aside className="lg:w-64 space-y-8">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                Filters
-              </h3>
+          {/* Filters Sidebar - Now a separate component */}
+          <ProductFilters
+            categories={categories}
+            brands={brands}
+            selectedCategory={selectedCategory}
+            selectedBrands={selectedBrands}
+            onCategoryChange={setSelectedCategory}
+            onBrandsChange={setSelectedBrands}
+          />
 
-              {/* Categories */}
-              <div className="mb-6">
-                <h4 className="font-medium mb-3">Categories</h4>
-                <div className="space-y-2">
-                  {categories.map((cat) => (
-                    <div key={cat._id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={cat._id}
-                        checked={selectedCategory === cat._id}
-                        onCheckedChange={() =>
-                          setSelectedCategory(
-                            selectedCategory === cat._id ? null : cat._id
-                          )
-                        }
-                      />
-                      <Label
-                        htmlFor={cat._id}
-                        className="cursor-pointer text-sm"
-                      >
-                        {cat.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Brands */}
-              <div>
-                <h4 className="font-medium mb-3">Brands</h4>
-                <div className="space-y-2">
-                  {brands.map((brand) => (
-                    <div
-                      key={brand._id}
-                      className="flex items-center space-x-2"
-                    >
-                      <Checkbox
-                        id={brand._id}
-                        checked={selectedBrands.includes(brand._id)}
-                        onCheckedChange={(checked) => {
-                          setSelectedBrands((prev) =>
-                            checked
-                              ? [...prev, brand._id]
-                              : prev.filter((id) => id !== brand._id)
-                          );
-                        }}
-                      />
-                      <Label
-                        htmlFor={brand._id}
-                        className="cursor-pointer text-sm"
-                      >
-                        {brand.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          {/* Product Grid */}
+          {/* Product Grid - Now a separate component */}
           <div className="flex-1">
-            {isPending || isLoading ? (
-              <div
-                className={
-                  viewMode === "grid"
-                    ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-                    : "space-y-4"
-                }
-              >
-                {[...Array(8)].map((_, i) => (
-                  <Skeleton key={i} className="h-80 rounded-xl" />
-                ))}
-              </div>
-            ) : error ? (
-              <div className="text-center py-16 bg-white rounded-xl">
-                <p className="text-red-600">{error}</p>
-                <Button onClick={fetchProducts} className="mt-4">
-                  Retry
-                </Button>
-              </div>
-            ) : products.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-xl">
-                <Search className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-                <p className="text-xl text-gray-600">No products found</p>
-                <p className="text-gray-500 mt-2">Try adjusting your filters</p>
-              </div>
-            ) : (
-              <motion.div
-                className={
-                  viewMode === "grid"
-                    ? "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-                    : "space-y-6"
-                }
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ staggerChildren: 0.1 }}
-              >
-                <AnimatePresence>
-                  {products.map((product) => (
-                    <motion.div
-                      key={product._id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      whileHover={{ y: -8 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <ProductCard
-                        product={{
-                          id: product._id,
-                          name: product.name,
-                          description: product.description,
-                          price: product.price,
-                          images: product.images?.[0]?.url,
-                          category:product.categoryName || product.categoryId?.name,
-                        }}
-                        variant={viewMode === "list" ? "compact" : "default"}
-                        // Instead of just calling addToCart locally, do:
-                        onAddToCart={() => addToCart(product._id)}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
-            )}
+            <ProductGrid
+              products={products}
+              isLoading={isLoading}
+              isPending={isPending}
+              error={error}
+              viewMode={viewMode}
+              onAddToCart={handleAddToCart}
+              onRetry={fetchProducts}
+            />
           </div>
         </div>
       </div>

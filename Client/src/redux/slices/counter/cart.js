@@ -1,38 +1,61 @@
+// slices/counter/cart.js   (or wherever it is)
 import { createSlice } from "@reduxjs/toolkit";
-
-const initialState = {
-  items: [], // array of cart items
-};
 
 const cartSlice = createSlice({
   name: "cart",
-  initialState,
+  initialState: {
+    items: [], // redux-persist will hydrate this automatically
+  },
   reducers: {
-    addToCart: (state, action) => {
-      const { id, quantity, ...rest } = action.payload;
-      const existing = state.items.find((i) => i.id === id);
+    addItem(state, action) {
+      const { id, name, price, image } = action.payload;
+      const existing = state.items.find((item) => item.id === id);
 
       if (existing) {
-        existing.quantity += quantity; // dynamic quantity
+        existing.quantity += 1;
       } else {
-        state.items.push({ id, ...rest, quantity });
+        state.items.push({
+          id,
+          name,
+          price,
+          image: image || "/placeholder.jpg",
+          quantity: 1,
+        });
       }
     },
 
-    removeFromCart: (state, action) => {
-      state.items = state.items.filter((i) => i.id !== action.payload);
+    removeItem(state, action) {
+      state.items = state.items.filter((item) => item.id !== action.payload);
     },
-    updateQuantity: (state, action) => {
-      const { id, quantity } = action.payload;
-      const item = state.items.find((i) => i.id === id);
-      if (item) item.quantity = quantity;
+
+    incrementQuantity(state, action) {
+      const item = state.items.find((i) => i.id === action.payload);
+      if (item) item.quantity += 1;
     },
-    clearCart: (state) => {
+
+    decrementQuantity(state, action) {
+      const item = state.items.find((i) => i.id === action.payload);
+      if (item) {
+        if (item.quantity === 1) {
+          state.items = state.items.filter((i) => i.id !== action.payload);
+        } else {
+          item.quantity -= 1;
+        }
+      }
+    },
+
+    clearCart(state) {
       state.items = [];
     },
   },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart } =
-  cartSlice.actions;
+export const {
+  addItem,
+  removeItem,
+  incrementQuantity,
+  decrementQuantity,
+  clearCart,
+} = cartSlice.actions;
+
 export default cartSlice.reducer;

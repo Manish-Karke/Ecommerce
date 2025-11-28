@@ -5,30 +5,30 @@ const initialState = {
   token: null,
   isLoggedIn: false,
   role: "",
+  _id: "",
   location: "",
 };
 
 export const userSlice = createSlice({
   name: "user",
-  initialState: initialState,
+  initialState,
   reducers: {
     loggedOut: (state) => {
-      return initialState;
+      // ✅ Better: Use Object.assign to reset
+      Object.assign(state, initialState);
     },
+    
     addLogginedDetail: (state, action) => {
-      return {
-        ...state,
-        email: action.payload.user?.email,
-        token:action.payload.user?.token,
-        isLoggedIn: action.payload?.isLoggedIn,
-        role: action.payload?.user.role,
-        _id: action.payload?.user._id,
-        location: action.payload?.user.location,
-      };
+      // ✅ Better: Direct mutation (Immer handles it)
+      state.email = action.payload.user?.email || "";
+      state.token = action.payload.user?.token || null;
+      state.isLoggedIn = action.payload?.isLoggedIn || false;
+      state.role = action.payload?.user?.role || "";
+      state._id = action.payload?.user?._id || "";
+      state.location = action.payload?.user?.location || "";
     },
   },
 });
 
 export const { loggedOut, addLogginedDetail } = userSlice.actions;
-
 export default userSlice.reducer;

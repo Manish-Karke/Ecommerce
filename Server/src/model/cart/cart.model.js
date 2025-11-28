@@ -36,13 +36,4 @@ const cartSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-cartSchema.index(
-  { userId: 1 },
-  { unique: true, partialFilterExpression: { userId: { $exists: true } } }
-);
-cartSchema.index(
-  { sessionId: 1 },
-  { unique: true, partialFilterExpression: { sessionId: { $exists: true } } }
-);
-
 module.exports = mongoose.model("Cart", cartSchema);
