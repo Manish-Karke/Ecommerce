@@ -187,7 +187,7 @@ class ProductService {
     // Add new images
     if (req.files && req.files.length > 0) {
       const uploadPromises = req.files.map((file) =>
-        cloudinarySvc.fileUpload(file.path, "products")
+        cloudinarySvs.fileUpload(file.path, "products")
       );
       const results = await Promise.allSettled(uploadPromises);
       results.forEach((result) => {

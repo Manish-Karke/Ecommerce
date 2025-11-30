@@ -1,4 +1,4 @@
-const { cloudinaryConfig } = require("../config/config.config");
+const { cloudinaryConfig } = require("../config/const.config");
 const { deleteFile } = require("../utilities/helper");
 
 const cloudinary = require("cloudinary").v2;

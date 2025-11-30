@@ -1,29 +1,71 @@
-const mongoose = require("mongoose");
+const { string } = require('joi');
+const mongoose = require('mongoose');
 
-const sessionSchema = new mongoose.Schema(
-  {
-    user: {
-      type: mongoose.Types.ObjectId,
-      required: true,
-      ref: "User",
+const ActivationSessionSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'User'
     },
-    actualTokem: {
-      actual: String,
-      masked: String,
+    actualToken: {
+        actualToken: String, 
+        maskedToken: String,
     },
-    RefreshToken: {
-      actual: String,
-      masked: String,
+    refreshToken: {
+        actualToken: String, 
+        maskedToken: String,
     },
-    SessionData: String,
-  },
-  {
-    timestamps: true,
-    autoCreate: true,
-    autoCreate: true,
-  }
-);
+    otherData: String,
+}, {
+    autoIndex: true, 
+    autoIndex: true,
+})  
 
-const sessionModel = new mongoose.model("SessionData", sessionSchema);
+const ActivationSessionModel = new mongoose.model("ActivationSession", ActivationSessionSchema);
 
-module.exports = sessionModel;
+const SessionSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'User'
+    },
+    actualToken: {
+        actualToken: String, 
+        maskedToken: String,
+    },
+    refreshToken: {
+        actualToken: String, 
+        maskedToken: String,
+    },
+    otherData: String,
+}, {
+    autoIndex: true, 
+    autoIndex: true,
+})  
+
+const SessionModel = new mongoose.model("Session", SessionSchema);
+
+const ForgetPasswordSessionSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'User'
+    },
+    actualToken: {
+        actualToken: String, 
+        maskedToken: String,
+    },
+    refreshToken: {
+        actualToken: String, 
+        maskedToken: String,
+    },
+    otherData: String,
+}, {
+    autoIndex: true, 
+    autoIndex: true,
+})  
+
+const ForgetPasswordSessionModel = new mongoose.model("ForgetPasswordSession", ForgetPasswordSessionSchema);
+
+module.exports = {
+    ActivationSessionModel,
+    SessionModel,
+    ForgetPasswordSessionModel,
+}

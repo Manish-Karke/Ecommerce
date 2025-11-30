@@ -6,7 +6,14 @@ import { useParams } from "next/navigation";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Truck, Shield, ChevronDown, ChevronUp, ShoppingCart } from "lucide-react";
+import {
+  Star,
+  Truck,
+  Shield,
+  ChevronDown,
+  ChevronUp,
+  ShoppingCart,
+} from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
@@ -37,7 +44,9 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await axios.get(`/api/product/${id}`);
+        const res = await axios.get(
+          process.env.NEXT_PUBLIC_API_URL + `/product/${id}`
+        );
         setProduct(res.data.data);
       } catch (err) {
         toast.error("Failed to load product");
@@ -106,7 +115,9 @@ export default function ProductDetailPage() {
                     key={img._id}
                     onClick={() => setSelectedImage(i)}
                     className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${
-                      selectedImage === i ? "border-indigo-600" : "border-gray-200"
+                      selectedImage === i
+                        ? "border-indigo-600"
+                        : "border-gray-200"
                     }`}
                   >
                     <Image src={img.url} alt="" fill className="object-cover" />
@@ -132,7 +143,10 @@ export default function ProductDetailPage() {
             <div className="flex items-center gap-2">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  <Star
+                    key={i}
+                    className="w-5 h-5 fill-yellow-400 text-yellow-400"
+                  />
                 ))}
               </div>
               <span className="text-sm text-gray-600">(4.8 • 324 reviews)</span>
@@ -173,7 +187,11 @@ export default function ProductDetailPage() {
             {/* Description */}
             <div className="space-y-4">
               <h3 className="text-xl font-semibold">Description</h3>
-              <p className={`text-gray-700 leading-relaxed ${!showFullDesc ? "line-clamp-4" : ""}`}>
+              <p
+                className={`text-gray-700 leading-relaxed ${
+                  !showFullDesc ? "line-clamp-4" : ""
+                }`}
+              >
                 {product.description || "No description available."}
               </p>
               {product.description && product.description.length > 150 && (
@@ -182,9 +200,13 @@ export default function ProductDetailPage() {
                   className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium"
                 >
                   {showFullDesc ? (
-                    <>Show Less <ChevronUp className="w-4 h-4" /></>
+                    <>
+                      Show Less <ChevronUp className="w-4 h-4" />
+                    </>
                   ) : (
-                    <>Read More <ChevronDown className="w-4 h-4" /></>
+                    <>
+                      Read More <ChevronDown className="w-4 h-4" />
+                    </>
                   )}
                 </button>
               )}

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { mongoDbConfig } = require("./config.config");
+const { mongoDbConfig } = require("./const.config");
 
 (async () => {
   try {

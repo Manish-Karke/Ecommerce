@@ -1,95 +1,188 @@
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import UserModel from "./auth.model.js";
-import { appConfig } from "../../config/config.config.js";
+const cloudinarySvc = require("../../ServiceBack/cloudinary.service");
+const bcrypt = require('bcryptjs');
+const UserModel = require("../user/user.model");
+const { ActivationSessionModel, SessionModel, ForgetPasswordSessionModel } = require("./user.session");
 
-const saltRounds = 10;
+class AuthService {
+    async transformRegisterDetails(req) {
+        try {
+            let details = req.body
 
-export const registerUser = async (req, res) => {
-  try {
-    // Step 1: Check if email exists
-    const existingUser = await UserModel.findOne({ email: req.body.email });
-    if (existingUser) return res.status(400).json("Email already taken");
+            if (req.file) {
+                details.avatar = await cloudinarySvc.uploadAvatar(req.file.path, "User/");
+            } else {
+                details.avatar = null
+            }
 
-    // Step 2: Hash password
-    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+            details.password = bcrypt.hashSync(details.password, 12)
 
-    // Step 3: Create user
-    const newUser = new UserModel({
-      ...req.body,
-      password: hashedPassword,
-    });
+            return details
+        } catch (error) {
+            throw error
+        }
+    }
 
-    await newUser.save();
-    return res.json({
-      message: "registered in successfully",
-      data: newUser,
-      isLoggedIn: true,
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    return res
-      .status(500)
-      .json({ message: "Registraion failed. Please try again later." });
-  }
+    registerUser = async (data) => {
+        try {
+            const userDetails = UserModel(data);
+            return await userDetails.save();
+        } catch (error) {
+            throw error
+        }
+    }
+
+    getUserDataFromEmail = async (req) => {
+        try {
+            const userDetails = await UserModel.findOne({
+                "email": req.body.email
+            })
+
+            return userDetails
+        } catch (error) {
+            throw error
+        }
+    }
+
+    getSingleByFilter = async (req) => {
+        try {
+            const { id } = req.params;
+            const userDetails = await UserModel.findById({
+                "_id": id
+            });
+            return userDetails
+        } catch (error) {
+            throw error
+        }
+    }
+
+    getSingleById = async (data) => {
+        try {
+            const userDetails = await UserModel.findById(data);
+            return userDetails
+        } catch (error) {
+            throw error
+        }
+    }
+
+    storeUserActivationSession = async (data) => {
+        try {
+            const userDetails = ActivationSessionModel(data);
+            return await userDetails.save();
+        } catch (error) {
+            throw error
+        }
+    }
+
+    storeUserSessionData = async (data) => {
+        try {
+            const userDetails = SessionModel(data);
+            return await userDetails.save();
+        } catch (error) {
+            throw error
+        }
+    }
+
+    getTokenByFilter = async (req) => {
+        try {
+            const { id } = req.params;
+            const userDetails = await ActivationSessionModel.findOne({
+                'userId': id
+            })
+            return userDetails
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    activateUser = async (data, filter) => {
+        try {
+            const userDetails = await UserModel.findOneAndUpdate(
+                filter,
+                data,
+                { new: true }
+            )
+            return userDetails
+        } catch (error) {
+            throw error
+        }
+    }
+
+    resetPassword = async (data, filter) => {
+        try {
+            const userDetails = await UserModel.findOneAndUpdate(
+                filter,
+                data,
+                { new: true }
+            )
+            return userDetails
+        } catch (error) {
+            throw error
+        }
+    }
+
+    storeForgetPasswordSessionModel = async (data) => {
+        try {
+            const userDetails = await ForgetPasswordSessionModel(data);
+            return await userDetails.save();
+        } catch (error) {
+            throw error
+        }
+    }
+
+    getSessionDataUsingToken = async (data) => {
+        try {
+            const userDetails = await SessionModel.findOne(data);
+            return userDetails;
+        } catch (error) {
+            throw error
+        }
+    }
+
+    getMyProfile = (data) => {
+        return {
+            _id: data._id,
+            name: data.name,
+            email: data.email,
+            role: data.role,
+            phone: data.phone,
+            isVerified: data.isVerified, 
+            isBan: data.isBan, 
+            avatar: {
+                public_id: data.avatar.public_id,
+                secure_url: data.avatar.secure_url,
+                optimizedUrl: data.avatar.optimizedUrl
+            },
+            sellerProfile: {
+                companyName: data.sellerProfile.companyName,
+                gstNumber: data.sellerProfile.gstNumber,
+                bio: data.sellerProfile.bio,
+                address: data.sellerProfile.address,
+                rating: data.sellerProfile.rating,
+                totalReviews: data.sellerProfile.totalReviews
+            },
+            addresses: data.addresses.map((items) => {
+                return {
+                    label: items.addresses.label,
+                    fullName: items.addresses.fullName,
+                    phone: items.addresses.phone,
+                    line1: items.addresses.line1,
+                    line2: items.addresses.line2,
+                    city: items.addresses.city,
+                    state: items.addresses.state,
+                    postalCode: items.addresses.postalCode,
+                    country: items.addresses.country,
+                    isDefault: items.addresses.isDefault
+                }
+            }),
+            favourites: data.favourites.map((items) => {
+                return {
+
+                }
+            })
+        }
+    }
 };
 
-export const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+const authSvc = new AuthService();
 
-    // Find user by email
-    const user = await UserModel.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "Email not found" });
-    }
-
-    // Compare password with hashed password from DB
-    const isMatched = await bcrypt.compare(password, user.password);
-    if (!isMatched) {
-      return res.status(401).json({ message: "Invalid password" });
-    }
-
-    if (user.status === "inactive") {
-      user.status = "active"; // Change status to active
-      await user.save(); // Save the updated user
-      // Optionally, you might want to send a "Welcome!" email here
-    }
-    // If status is 'suspended' or other restricted states, you can prevent login:
-    if (user.status === "suspended") {
-      return res
-        .status(403)
-        .json({ message: "Your account has been suspended." });
-    }
-    // JWT
-    const token = jwt.sign(
-      { email: user.email, id: user._id },
-      `${appConfig.jwtSecret}`,
-      {
-        expiresIn: "1h",
-      }
-    );
-
-    return res.json({
-      message: "Logged in successfully",
-      user,
-      isLoggedIn: true,
-      token,
-      status: user.status,
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    return res
-      .status(500)
-      .json({ message: "Login failed. Please try again later." });
-  }
-};
-
-export const getAllUsers = async (req, res) => {
-  try {
-    const users = await UserModel.find();
-    return res.send(users);
-  } catch (error) {
-    return res.status(500).send("Error fetching users");
-  }
-};
+module.exports = authSvc
