@@ -1,68 +1,87 @@
-const { appConfig } = require("../config/const.config");
+// src/middleware/middleware.auth.js   (or wherever it lives)
+
+const { appConfig, userRoles } = require("../config/const.config");
+const jwt = require("jsonwebtoken");
+const authSvc = require("../model/auth/auth.service");
 
 const auth = (allowedRoles = null) => {
-  return async (req, res, next) => {
-    try {
-      let accessToken = req.headers["authorization"];
+    return async (req, res, next) => {
+        try {
+            // 1. Get token from header
+            let token = req.headers["authorization"] || req.headers["Authorization"] || null;
 
-      // 🔥 Added safety check
-      if (!accessToken || !accessToken.startsWith("Bearer ")) {
-        return res.status(401).json({
-          status: 401,
-          message: "Unauthorized: Token missing or invalid",
-        });
-      }
+            if (!token) {
+                return res.status(401).json({
+                    message: "Token expected.",
+                    status: 401,
+                });
+            }
 
-      // 🔥 Safe split
-      accessToken = accessToken.split(" ")[1];
+            // Remove "Bearer " prefix if exists
+            if (token.toLowerCase().startsWith("bearer ")) {
+                token = token.split(" ").pop();
+            }
 
-      const token = await authSvs.getSingleByFilter({
-        "actualToken.masked": accessToken,
-      });
+            // 2. Find session using masked token
+            const sessionDetail = await authSvc.getSessionDataUsingToken({
+                "actualToken.maskedToken": token,
+            });
 
-      if (!token) {
-        return res.status(401).json({
-          status: 401,
-          message: "Unauthorized",
-        });
-      }
+            if (!sessionDetail) {
+                return res.status(401).json({
+                    message: "Invalid or expired token.",
+                    status: 401,
+                });
+            }
 
-      const payload = jwt.verify(token.actualToken.actual, appConfig.web_token);
+            // 3. Verify actual JWT
+            const payload = jwt.verify(sessionDetail.actualToken.actualToken, appConfig.web_token);
 
-      if (payload.type !== "Bearer") {
-        return res.status(403).json({
-          status: 403,
-          message: "Access not expected",
-        });
-      }
+            // 4. Token type check
+            if (payload.type !== "Bearer") {
+                return res.status(403).json({
+                    message: "Invalid token type. Bearer token required.",
+                    status: 403,
+                });
+            }
 
-      const userDetail = await userSvc.getTokenByFilter({
-        _id: payload.sub,
-      });
+            // 5. Get user by ID (THIS WAS THE HIDDEN BUG)
+            const userDetails = await authSvc.getSingleById(payload.sub); // ← pass string, not object!
 
-      if (!userDetail) {
-        return res.status(403).json({
-          status: 403,
-          message: "User doesn't exist anymore",
-        });
-      }
+            if (!userDetails) {
+                return res.status(404).json({
+                    message: "Account not found.",
+                    status: 404,
+                });
+            }
 
-      if (allowedRoles === null || allowedRoles === Roles.ADMIN) {
-        req.loggedInUser = await userSvc.getUserProfile(userDetail);
-        next();
-      } else {
-        return res.status(403).json({
-          status: 403,
-          message: "You are not allowed to access.",
-        });
-      }
-    } catch (error) {
-      console.log("Auth Error:", error);
-      return res.status(error.status || 500).json({
-        message: error.message || "Internal server error",
-      });
-    }
-  };
+            // 6. Role authorization check
+            const hasAccess =
+                !allowedRoles ||
+                allowedRoles === userRoles.CUSTOMER ||
+                (Array.isArray(allowedRoles) && allowedRoles.includes(userDetails.role));
+
+            if (!hasAccess) {
+                return res.status(403).json({
+                    message: "You are not authorized to access this resource.",
+                    status: 403,
+                });
+            }
+
+            // 7. Attach user to request
+            req.loggedInUser = authSvc.getMyProfile(userDetails);
+            next();
+        } catch (err) {
+            // Any unexpected error (jwt expired, malformed, etc.)
+            if (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    message: "Invalid or expired token.",
+                    status: 401,
+                });
+            }
+            next(err); // Let global error handler deal with it
+        }
+    };
 };
 
 module.exports = auth;

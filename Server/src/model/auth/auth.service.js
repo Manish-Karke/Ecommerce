@@ -44,14 +44,13 @@ class AuthService {
     }
 
 
-    getSingleById = async (data) => {
-        try {
-            const userDetails = await UserModel.findById(data);
-            return userDetails
-        } catch (error) {
-            throw error
-        }
+   getSingleById = async (id) => {
+    try {
+        return await UserModel.findById(id); // ← id is string like "507f1f77bcf86cd799439011"
+    } catch (error) {
+        throw error;
     }
+}
 
     storeUserActivationSession = async (data) => {
         try {
@@ -149,39 +148,40 @@ class AuthService {
             role: data.role,
             phone: data.phone,
             isVerified: data.isVerified, 
+            location:data.location,
             isBan: data.isBan, 
-            avatar: {
-                public_id: data.avatar.public_id,
-                secure_url: data.avatar.secure_url,
-                optimizedUrl: data.avatar.optimizedUrl
-            },
-            sellerProfile: {
-                companyName: data.sellerProfile.companyName,
-                gstNumber: data.sellerProfile.gstNumber,
-                bio: data.sellerProfile.bio,
-                address: data.sellerProfile.address,
-                rating: data.sellerProfile.rating,
-                totalReviews: data.sellerProfile.totalReviews
-            },
-            addresses: data.addresses.map((items) => {
-                return {
-                    label: items.addresses.label,
-                    fullName: items.addresses.fullName,
-                    phone: items.addresses.phone,
-                    line1: items.addresses.line1,
-                    line2: items.addresses.line2,
-                    city: items.addresses.city,
-                    state: items.addresses.state,
-                    postalCode: items.addresses.postalCode,
-                    country: items.addresses.country,
-                    isDefault: items.addresses.isDefault
-                }
-            }),
-            favourites: data.favourites.map((items) => {
-                return {
+            // avatar: {
+            //     public_id: data.avatar?.public_id,
+            //     secure_url: data.avatar?.secure_url,
+            //     optimizedUrl: data.avatar.optimizedUrl
+            // },
+            // sellerProfile: {
+            //     companyName: data.sellerProfile.companyName,
+            //     gstNumber: data.sellerProfile.gstNumber,
+            //     bio: data.sellerProfile.bio,
+            //     address: data.sellerProfile.address,
+            //     rating: data.sellerProfile.rating,
+            //     totalReviews: data.sellerProfile.totalReviews
+            // },
+            // addresses: data.addresses.map((items) => {
+            //     return {
+            //         label: items.addresses.label,
+            //         fullName: items.addresses.fullName,
+            //         phone: items.addresses.phone,
+            //         line1: items.addresses.line1,
+            //         line2: items.addresses.line2,
+            //         city: items.addresses.city,
+            //         state: items.addresses.state,
+            //         postalCode: items.addresses.postalCode,
+            //         country: items.addresses.country,
+            //         isDefault: items.addresses.isDefault
+            //     }
+            // }),
+            // favourites: data.favourites.map((items) => {
+            //     return {
 
-                }
-            })
+            //     }
+            // })
         }
     }
 };

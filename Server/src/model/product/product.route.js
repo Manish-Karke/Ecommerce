@@ -1,3 +1,5 @@
+const { userRoles } = require("../../config/const.config");
+const { Roles } = require("../../config/constant");
 const auth = require("../../middleware/middleware.auth");
 const userValidator = require("../../middleware/middleware.validate")
 const uploader = require("../../middleware/uploader.middleware");
@@ -7,20 +9,20 @@ const productRouter = require("express").Router();
 
 // private
 productRouter.route("/")
-  .post(auth(),uploader().array("images"),userValidator(ProductValidationDTO),productCtrl.createProduct)
-  .get(auth(), productCtrl.GetAllProductList);
+  .post(auth(userRoles.ADMIN),uploader().array("images"),userValidator(ProductValidationDTO),productCtrl.createProduct)
+  .get( productCtrl.GetAllProductList);
 
 //listing of all the proudct
 
 productRouter
   .route("/:id")
-  .get(auth(), productCtrl.listProductById)
+  .get( productCtrl.listProductById)
   .put(
-    auth(),
+    auth(userRoles.ADMIN),
     uploader().array("images"),
     userValidator(ProductUpdateValidationDTO),
     productCtrl.updateProductById
   )
-  .delete(auth(), productCtrl.deleteProductById);
+  .delete(auth(userRoles.ADMIN), productCtrl.deleteProductById);
 
 module.exports = productRouter;

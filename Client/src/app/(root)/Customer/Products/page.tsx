@@ -23,6 +23,7 @@ import { addItem } from "@/redux/slices/counter/cart";
 // Import the new separated components
 import ProductFilters from "./ProducrFilters";
 import ProductGrid from "./ProdcutGrid";
+import api from "@/lib/api";
 interface Product {
   _id: string;
   name: string;
@@ -128,7 +129,7 @@ export default function ProductsPage() {
         localStorage.setItem("sessionId", sessionId);
       }
 
-      await axios.post(`${API_BASE_URL}/cart/add`, {
+      await api.post(`${API_BASE_URL}/cart/add`, {
         sessionId,
         items: [
           {

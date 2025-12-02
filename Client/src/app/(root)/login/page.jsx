@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../../../lib/api"
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
@@ -49,37 +49,36 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await axios.post(
-        process.env.NEXT_PUBLIC_API_URL + "/login/",
-        formData
-      );
+  const response = await api.post(
+    process.env.NEXT_PUBLIC_API_URL + "/login/",
+    formData
+  );
 
-      if (response.status === 200) {
-        const { token, user } = response.data;
+  if (response.status === 200) {
+    // Extract from backend correctly
+    const { actualToken, refreshToken } = response.data.data;
 
-        localStorage.setItem("token", token);
+    // Save JWT
+    localStorage.setItem("token", actualToken);
+    localStorage.setItem("refreshToken", refreshToken);
 
-        dispatch(
-          addLogginedDetail({
-            user: {
-              email: user.email,
-              token,
-              role: user.role,
-              _id: user._id,
-              location: user.location,
-            },
-            isLoggedIn: true,
-          })
-        );
+    // If you want to store user details too,
+    // your backend MUST send them in the response.
+    // For now just store token.
+    dispatch(
+      addLogginedDetail({
+        user: {
+          email: formData.email,
+          token: actualToken
+        },
+        isLoggedIn: true,
+      })
+    );
 
-        // Redirect based on role
-        if (user.role === "customer") {
-          router.push("/Customer/Products");
-        } else {
-          router.push("/Admin");
-        }
-      }
-    } catch (err) {
+    router.push("/Customer/Products");
+  }
+}
+catch (err) {
       const backendError =
         err.response?.data?.message || "Invalid email or password.";
       setApiError(backendError);
@@ -104,7 +103,10 @@ const LoginPage = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Email Field */}
         <div>
-          <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
+          <label
+            htmlFor="email"
+            className="block text-sm font-semibold text-gray-700 mb-1"
+          >
             Email
           </label>
           <input
@@ -123,7 +125,10 @@ const LoginPage = () => {
 
         {/* Password Field */}
         <div>
-          <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
+          <label
+            htmlFor="password"
+            className="block text-sm font-semibold text-gray-700 mb-1"
+          >
             Password
           </label>
           <input
@@ -156,7 +161,10 @@ const LoginPage = () => {
 
       <p className="text-center mt-8 text-gray-600">
         Don't have an account?{" "}
-        <Link href="/register" className="text-blue-600 hover:underline font-medium">
+        <Link
+          href="/register"
+          className="text-blue-600 hover:underline font-medium"
+        >
           Register here
         </Link>
       </p>
