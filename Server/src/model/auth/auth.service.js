@@ -1,22 +1,29 @@
 const cloudinarySvc = require("../../ServiceBack/cloudinary.service");
 const bcrypt = require('bcryptjs');
-const UserModel = require("../user/user.model");
+const UserModel = require("./auth.model");
 const { ActivationSessionModel, SessionModel, ForgetPasswordSessionModel } = require("./user.session");
 
 class AuthService {
     async transformRegisterDetails(req) {
         try {
-            let details = req.body
+           let details = { ...req.body };  // clone
 
-            if (req.file) {
-                details.avatar = await cloudinarySvc.uploadAvatar(req.file.path, "User/");
-            } else {
-                details.avatar = null
-            }
+        // FORCE role from validated data (or default)
+        details.role = details.role || "customer";  // ← THIS IS CRITICAL
 
-            details.password = bcrypt.hashSync(details.password, 12)
+        // Or even better: use the constant
+        // details.role = details.role?.toLowerCase() === "admin" ? "admin" : "customer";
 
-            return details
+        if (req.file) {
+            details.avatar = await cloudinarySvc.uploadAvatar(req.file.path, "User/");
+        }
+
+        // Remove confirm_password
+        delete details.confirm_password;
+
+        details.password = bcrypt.hashSync(details.password, 12);
+
+        return details;
         } catch (error) {
             throw error
         }

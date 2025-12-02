@@ -34,7 +34,7 @@ class ProductService {
     if (req.files && req.files.length > 0) {
       payload.images = [];
       const uploadPromises = req.files.map((file) =>
-        cloudinarySvc.fileUpload(file.path, "products")
+        cloudinarySvs.fileUpload(file.path, "products")
       );
 
       const results = await Promise.allSettled(uploadPromises);
@@ -145,7 +145,7 @@ class ProductService {
     const product = await ProductModel.findById(id)
       .populate("categoryId", "name")
       .populate("brandId", "name logo")
-      .populate("seller", "name email")
+      // .populate("seller", "name email")
       .lean();
 
     if (!product) return null;

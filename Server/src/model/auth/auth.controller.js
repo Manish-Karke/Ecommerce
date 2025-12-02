@@ -147,7 +147,7 @@ class AuthController {
                 },
                 code: 200,
                 status: 'Successful Login',
-                message: "Thank you for logging in. Welocome!!",
+                message: "Thank you for logging in. Welcome to shopH!!",
                 options: null
             })
         } catch (error) {

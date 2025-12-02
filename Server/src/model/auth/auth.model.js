@@ -1,15 +1,24 @@
-import mongoose from "mongoose";
+// src/model/auth/auth.model.js
 
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const userSchema = new Schema(
   {
-    email: { type: String, unique: true, sparse: true },
+    username: { type: String, trim: true, minlength: 3, maxlength: 30 },
+    email: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      unique: true,
+      sparse: true,
+    },
     phoneNumber: { type: String, unique: true, sparse: true },
     role: {
       type: String,
       enum: ["admin", "customer"],
       default: "customer",
+      required: true,
     },
     location: String,
     gender: String,
@@ -17,16 +26,14 @@ const userSchema = new Schema(
     status: {
       type: String,
       enum: ["active", "inactive", "suspended"],
-      default: "inactive", // users need activation (via email or admin)
+      default: "inactive",
     },
     password: String,
   },
-  {
-    timestamps: true, // gives you createdAt & updatedAt automatically
-  }
+  { timestamps: true }
 );
 
-// THIS IS THE MOST IMPORTANT LINE
-const User = mongoose.models.User || mongoose.model("User", userSchema);
+// PREVENT OVERWRITE + WORKS WITH require()
+const UserModel = mongoose.models.User || mongoose.model("User", userSchema);
 
-export default User;
+module.exports = UserModel;   // ← THIS IS THE KEY

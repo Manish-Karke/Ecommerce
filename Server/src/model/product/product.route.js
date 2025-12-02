@@ -9,7 +9,7 @@ const productRouter = require("express").Router();
 
 // private
 productRouter.route("/")
-  .post(auth(userRoles.ADMIN),uploader().array("images"),userValidator(ProductValidationDTO),productCtrl.createProduct)
+  .post(auth(userRoles.ADMIN),uploader().array("images",5),userValidator(ProductValidationDTO),productCtrl.createProduct)
   .get( productCtrl.GetAllProductList);
 
 //listing of all the proudct

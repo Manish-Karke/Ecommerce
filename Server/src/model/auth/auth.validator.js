@@ -1,5 +1,4 @@
 const Joi = require("joi");
-const { Roles } = require("../../config/constant");
 const { userRoles } = require("../../config/const.config");
 
 const authValidatorRegistrationDTO = Joi.object({

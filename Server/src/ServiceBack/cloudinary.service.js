@@ -6,9 +6,9 @@ const cloudinary = require("cloudinary").v2;
 class CloudinaryServices {
   constructor() {
     cloudinary.config({
-      cloud_name: cloudinaryConfig.cloudName,
-      api_key: cloudinaryConfig.apiKey,
-      api_secret: cloudinaryConfig.apiSecret,
+      cloud_name: cloudinaryConfig.cloud_name,
+      api_key: cloudinaryConfig.api_key,
+      api_secret: cloudinaryConfig.api_secret,
     });
   }
 
