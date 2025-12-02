@@ -43,17 +43,6 @@ class AuthService {
         }
     }
 
-    getSingleByFilter = async (req) => {
-        try {
-            const { id } = req.params;
-            const userDetails = await UserModel.findById({
-                "_id": id
-            });
-            return userDetails
-        } catch (error) {
-            throw error
-        }
-    }
 
     getSingleById = async (data) => {
         try {
@@ -82,9 +71,23 @@ class AuthService {
         }
     }
 
-    getTokenByFilter = async (req) => {
+    
+    getSingleByFilter = async (params) => {
+    try {
+        const { id } = params;
+            // console.log("id from getsinglwby filter",id)
+            // const userDetails = await UserModel.findById({
+            //     "_id": id
+            // });
+            return await UserModel.findById(id)
+        } catch (error) {
+            throw error
+        }
+    }
+
+    getTokenByFilter = async (params) => {
         try {
-            const { id } = req.params;
+            const { id } = params;
             const userDetails = await ActivationSessionModel.findOne({
                 'userId': id
             })

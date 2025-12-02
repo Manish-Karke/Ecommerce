@@ -1,4 +1,4 @@
-import { registerUser, loginUser, getAllUsers } from "./auth.service.js";
+
 import userValidator from "../../middleware/middleware.validate.js";
 import {
   authValidatorLoginDTO,
@@ -6,6 +6,7 @@ import {
 } from "./auth.validator.js";
 import express from "express"
 import authCtrl from "./auth.controller.js";
+import auth from "../../middleware/middleware.auth.js";
 const userRouter =express.Router();
 
 userRouter.post(
@@ -14,9 +15,9 @@ userRouter.post(
   authCtrl.registerUser
 );
 
-userRouter.put("/activate/:token", authCtrl.activate)
-userRouter.post('/login', userValidator(authValidatorLoginDTO), authCtrl.userLogin);
-userRouter.get("/me", auth("admin"), authCtrl.getUserDetail)
+userRouter.put("/activate/:id", authCtrl.activateUser)
+userRouter.post('/login', userValidator(authValidatorLoginDTO), authCtrl.loginUser);
+userRouter.get("/me", auth("admin"), authCtrl.getProfile)
 
 
 export default userRouter;

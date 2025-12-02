@@ -1,6 +1,6 @@
 const { appConfig } = require("../../config/const.config")
-const MailSvc = require("../../services/nodemailer.service")
-const { randomNumberGeneration } = require("../../utility/helper")
+const MailSvc = require("../../ServiceBack/email.service")
+const { generateRandomString } = require("../../utilities/helper")
 const authSvc = require("./auth.service")
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs')
@@ -19,11 +19,11 @@ class AuthController {
                 userId: data._id,
                 actualToken: {
                     actualToken: actualToken,
-                    maskedToken: randomNumberGeneration(150)
+                    maskedToken: generateRandomString(150)
                 },
                 refreshToken: {
                     actualToken: refreshToken,
-                    maskedToken: randomNumberGeneration(150)
+                    maskedToken: generateRandomString(150)
                 },
                 sessionData: JSON.stringify({
                     device: 'web'
@@ -47,8 +47,9 @@ class AuthController {
         }
     }
     activateUser = async (req, res, next) => {
+     
         try {
-            const userDetails = await authSvc.getSingleByFilter(req);
+            const userDetails = await authSvc.getSingleByFilter(req.params);
 
             if (!userDetails) {
                 throw {
@@ -58,7 +59,7 @@ class AuthController {
                 }
             };
 
-            const userToken = await authSvc.getTokenByFilter(req);
+            const userToken = await authSvc.getTokenByFilter(req.params);
 
             if (!userToken) {
                 throw {
@@ -83,7 +84,7 @@ class AuthController {
             }
 
             const updatedUserDetails = await authSvc.activateUser(
-                { isVerified: true },
+                { isVerified: true, status: "active" },
                 { _id: userToken.userId }
             );
 
@@ -126,11 +127,11 @@ class AuthController {
                 userId: userDetails._id,
                 actualToken: {
                     actualToken: actualToken,
-                    maskedToken: randomNumberGeneration(150)
+                    maskedToken: generateRandomString(150)
                 },
                 refreshToken: {
                     actualToken: refreshToken,
-                    maskedToken: randomNumberGeneration(150)
+                    maskedToken: generateRandomString(150)
                 },
                 otherData: JSON.stringify({
                     device: 'web'
@@ -188,11 +189,11 @@ class AuthController {
                 userId: userDetails._id,
                 actualToken: {
                     actualToken: actualToken,
-                    refreshToken: randomNumberGeneration(150)
+                    refreshToken: generateRandomString(150)
                 },
                 refreshToken: {
                     actualToken: refreshToken,
-                    refreshToken: randomNumberGeneration(150)
+                    refreshToken: generateRandomString(150)
                 },
                 otherData: JSON.stringify({
                     device: "web"

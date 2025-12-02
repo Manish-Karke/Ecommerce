@@ -27,7 +27,7 @@ const auth = (allowedRoles = null) => {
         });
       }
 
-      const payload = jwt.verify(token.actualToken.actual, appConfig.jwtSecret);
+      const payload = jwt.verify(token.actualToken.actual, appConfig.web_token);
 
       if (payload.type !== "Bearer") {
         return res.status(403).json({

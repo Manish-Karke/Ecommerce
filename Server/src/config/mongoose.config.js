@@ -3,7 +3,7 @@ const { mongoDbConfig } = require("./const.config");
 
 (async () => {
   try {
-    await mongoose.connect(mongoDbConfig.dbUrl, {
+    await mongoose.connect(mongoDbConfig.dburl, {
       dbName: mongoDbConfig.dbName,
       autoCreate: true,
       autoIndex: true,

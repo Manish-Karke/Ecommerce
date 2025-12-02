@@ -1,9 +1,9 @@
 const http = require("http");
 
 const app = require("./src/config/config");
-const { requirementConfig } = require("./src/config/config.config");
 
-const PORT = requirementConfig.port;
+
+const PORT =8080
 const URL = "127.0.0.1";
 const httpServer = http.createServer(app);
 
